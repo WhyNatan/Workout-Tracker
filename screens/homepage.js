@@ -1,5 +1,5 @@
 import '../gesture-handler';
-import { Text, Dimensions, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighlight, TouchableNativeFeedback } from 'react-native';
+import { Text, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighlight, TouchableNativeFeedback } from 'react-native';
 import { styles } from '../styles/styles';
 
 export function HomePage({ navigation }) {
@@ -43,12 +43,11 @@ const AppBar = () => {
 };
 
 function WorkoutTab({ navigation }) {
-    const screenWidth = Dimensions.get('window').width;
     return (
         <View style={[{ paddingBottom: 15 }]}>
             <TouchableNativeFeedback onPress={() => navigation.navigate('Workout')}>
-                <View style={[{ width: screenWidth - 20, height: 110, backgroundColor: '#C6C6C6', paddingLeft: 20, alignSelf: 'center', borderRadius: 15, padding: 10 }]}>
-                    <Text style={styles.setTitle}>Chest</Text>
+                <View style={styles.workoutContainer}>
+                    <Text style={styles.setTitleContainer}>Chest</Text>
                     <Text>3x 12 reps of 60kg - Bench Press</Text>
                     <Text>3x 11 reps of 50kg - Incline Bench Press</Text>
                     <Text>3x 14 reps of 20kg - Chest Flys</Text>

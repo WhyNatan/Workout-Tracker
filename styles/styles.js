@@ -1,4 +1,6 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const screenWidth = Dimensions.get('window').width;
 
 export const styles = StyleSheet.create({
   container: {
@@ -7,9 +9,18 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   containerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    display: 'flex',
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    justifyContent: 'flex-start',
+  },
+  workoutContainer: {
+    width: screenWidth - 20, 
+    height: 120, 
+    backgroundColor: '#C6C6C6', 
+    padding: 10,
+    paddingLeft: 20, 
+    alignSelf: 'center', 
+    borderRadius: 15, 
   },
   appbarTitle: {
     fontSize: 30,
@@ -17,9 +28,89 @@ export const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     paddingLeft: 20,
   },
-  setTitle: {
-    fontSize: 20,
+  setTitleContainer: {
+    fontSize: 30,
     fontWeight: 'bold',
-    paddingBottom: 3,
+  },
+
+  exerciseBodyPart: {
+    fontSize: 30,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  exerciseTitleContainer: {
+    paddingLeft:10,
+    padding: 2,
+    marginBottom: 4,
+    backgroundColor: '#C6C6C6',
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
+    width: screenWidth - 40,
+  },
+  exerciseTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  exerciseCaptionContainer: {
+    paddingLeft:10,
+    padding:5,
+    marginBottom: 4,
+    backgroundColor: '#C6C6C6',
+    width: screenWidth - 40,
+  },
+  exerciseCaption: {
+    fontSize: 14,
+  },
+  exerciseLineContainer: {
+    height: 35,
+    paddingLeft:10,
+    padding:5,
+    backgroundColor: '#C6C6C6',
+    width: screenWidth - 40,
+  },
+  exerciseLine: {
+    fontSize: 13,
+  },
+  exerciseLineEditable: {
+    fontSize: 13,
+    backgroundColor: '#FFFF',
+    borderRadius: 4,
+    height: 24,
+    width: 25,
+    textAlign: 'center',
+  },
+  exerciseAddContainer: {
+    paddingLeft:10,
+    padding:5,
+    marginTop: 4,
+    backgroundColor: '#C6C6C6',
+    width: screenWidth - 40,
+  },
+  exerciseAdd: {
+    fontSize: 13,
+    fontWeight: "bold",
+  },
+  exerciseFooterContainer: {
+    paddingLeft:10,
+    padding: 2,
+    marginTop: 4,
+    backgroundColor: '#C6C6C6',
+    borderBottomLeftRadius: 5,
+    borderBottomRightRadius: 5,
+    width: screenWidth - 40,
+  },
+  exerciseFooter: {
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  exerciseNotes: {
+    fontSize: 11,
+    paddingTop: 2,
+    paddingRight: 5,
+    paddingBottom: 5,
+    fontColor: '#FFF',
+  },
+  multilineText: {
+    minHeight: 40
   },
 });
