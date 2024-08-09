@@ -1,0 +1,132 @@
+{
+    "workouts":[
+        {
+        "bodypart":"Chest",
+        "exercises":[
+            {
+            "exercise":"Bench Press",
+            "sets":[{
+                "setNumber":1,
+                "order":1,
+                "reps":5,
+                "weight":60,
+                "bestSetReps":12,
+                "bestSetWeight":60
+                },
+                {
+                "setNumber":2,
+                "order":1,
+                "reps":5,
+                "weight":60,
+                "bestSetReps":6,
+                "bestSetWeight":60
+                }],
+            "notes":"No notes."
+            },
+            {
+            "exercise":"Incline Bench Press",
+            "sets":[{
+                "setNumber":1,
+                "order":1,
+                "reps":10,
+                "weight":50,
+                "bestSetReps":11,
+                "bestSetWeight":50
+                },
+                {
+                "setNumber":2,
+                "order":1,
+                "reps":7,
+                "weight":50,
+                "bestSetReps":8,
+                "bestSetWeight":50
+                }],
+            "notes":"No notes, again."
+            },
+            {
+            "exercise":"Crucifixo",
+            "sets":[{
+                "setNumber":1,
+                "order":1,
+                "reps":9,
+                "weight":20,
+                "bestSetReps":14,
+                "bestSetWeight":20
+                },
+                {
+                "setNumber":2,
+                "order":1,
+                "reps":6,
+                "weight":20,
+                "bestSetReps":10,
+                "bestSetWeight":20
+                }],
+            "notes":"No notes, once again."
+            },
+            {
+            "exercise":"Chest Pull Machine",
+            "sets":[{
+                "setNumber":1,
+                "order":1,
+                "reps":10,
+                "weight":"13P",
+                "bestSetReps":12,
+                "bestSetWeight":"13P"
+                },
+                {
+                "setNumber":2,
+                "order":1,
+                "reps":7,
+                "weight":"13P",
+                "bestSetReps":10,
+                "bestSetWeight":"13P"
+                }],
+            "notes":"No notes, one more time."
+            }
+        ]},
+        {
+        "bodypart":"Tricep",
+        "exercises":[
+            {
+            "exercise":"One Hand Tricep Extension",
+            "sets":[{
+                "setNumber":1,
+                "order":1,
+                "reps":"15/15",
+                "weight":"10 kg",
+                "bestSetReps":"16/17",
+                "bestSetWeight":"10 kg"
+                },
+                {
+                "setNumber":2,
+                "order":1,
+                "reps":"10/10",
+                "weight":"10 kg",
+                "bestSetReps":"14/14",
+                "bestSetWeight":"10 kg"
+                }],
+            "notes":""
+            },
+            {
+            "exercise":"Rope Pulldown",
+            "sets":[{
+                "setNumber":1,
+                "order":1,
+                "reps":"15/15",
+                "weight":"10 kg",
+                "bestSetReps":"16/17",
+                "bestSetWeight":"10 kg"
+                },
+                {
+                "setNumber":2,
+                "order":1,
+                "reps":"10/10",
+                "weight":"10 kg",
+                "bestSetReps":"14/14",
+                "bestSetWeight":"10 kg"
+                }],
+            "notes":""
+            }
+        ]}
+    ]
+}

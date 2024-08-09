@@ -1,86 +1,156 @@
 import '../gesture-handler';
-import { React } from 'react';
-import { View, Text, Alert, TextInput, TouchableNativeFeedback } from 'react-native';
+import '../BackEnd';
+import { React, useState } from 'react';
+import { View, Text, Alert, TextInput, TouchableNativeFeedback, Button } from 'react-native';
 import { styles } from '../styles/styles';
 import { Icon } from '@rneui/base';
+import { ScrollView } from 'react-native-gesture-handler';
 
-export function WorkoutPage({ navigation }) {
+export function WorkoutPage({ navigation, route }) {
+    // var workout = JSON.stringify(route.params);
+    var workout = route.params;
+    var workoutBodypart  = workout.getBodypart();
+    var workoutExercises = workout.getExercises();
+
     return (
-        <View>
+
+        <View style={[{flex:1}]}>
             <AppBar navigation={navigation}/>
 
-            <View style={[{paddingLeft: 20, paddingTop: 10}]}>
-                <TextInput style={styles.exerciseBodyPart}>Chest</TextInput>
+            <ScrollView style={[{paddingLeft: 20, paddingTop: 10}]}>
+                <TextInput style={styles.exerciseBodyPart} value={workoutBodypart}/>
 
-                <View style={styles.exerciseTitleContainer}>
-                    <TextInput style={styles.exerciseTitle}>Bench Press</TextInput>
-                </View>
+                <ExercisesBlock exercises={workoutExercises}/>
 
-                {/* Caption line */}
-                <View style={[styles.exerciseCaptionContainer, styles.containerRow]}>
-                    <GridCell style={styles.exerciseCaption} width={4} content='Set'/>
-                    <GridCell style={styles.exerciseCaption} width={7} content='Previous'/>
-                    <GridCell style={styles.exerciseCaption} width={5} content='Reps'/>
-                    <GridCell style={styles.exerciseCaption} width={5} content='KG'/>
-                </View>
+                <TouchableNativeFeedback onPress={()=>{Alert.alert("Add Exercise")}}>
+                    <View style={styles.addExerciseContainer}> 
+                        <Text style={styles.addExercise}>
+                            Add Exercise
+                        </Text>
+                    </View>
+                </TouchableNativeFeedback>
 
-                <View style={[styles.exerciseLineContainer, styles.containerRow]}>
-                    <GridCell style={styles.exerciseLine} width={4} content='1'/>
-                    <GridCell style={styles.exerciseLine} width={7} content='12 x 55'/>
-                    <GridCell style={styles.exerciseLineEditable} width={5} content='10' editable/>
-                    <GridCell style={styles.exerciseLineEditable} width={5} content='60' editable/>
-                </View>
-
-                <View style={[styles.exerciseLineContainer, styles.containerRow]}>
-                    <GridCell style={styles.exerciseLine} width={4} content='2'/>
-                    <GridCell style={styles.exerciseLine} width={7} content='10 x 55'/>
-                    <GridCell style={styles.exerciseLineEditable} width={5} content='8' editable/>
-                    <GridCell style={styles.exerciseLineEditable} width={5} content='60' editable/>
-                </View>
-
-                <View style={[styles.exerciseLineContainer, styles.containerRow]}>
-                    <GridCell style={styles.exerciseLine} width={4} content='3'/>
-                    <GridCell style={styles.exerciseLine} width={7} content='8 x 55'/>
-                    <GridCell style={styles.exerciseLineEditable} width={5} content='5' editable/>
-                    <GridCell style={styles.exerciseLineEditable} width={5} content='60' editable/>
-                </View>
-
-                <View style={styles.exerciseAddContainer}>
-                    <Text style={styles.exerciseAdd} onPress={() => Alert.alert("Add Set")}>Add Set</Text>
-                </View>
-
-                <View style={styles.exerciseFooterContainer}>
-                    <Text style={[{fontWeight: 'bold', fontSize: 14,}]}>Notes</Text>
-                    <TextInput 
-                        style={[styles.exerciseNotes, styles.multilineText]}
-                        // value="Bring the bar down to the chest and then back up. Filler line cause whatever."
-                        value="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-                        placeholder="Write notes here."
-                        multiline
-                    />
-                </View>
-
-
-            </View>
+            </ScrollView>
         </View>
     );
 };
 
-const GridCell = ({style, width, content, editable=false}) => {
-    if (editable) {
-        return (
-            <View style={[{width: (width * 10), alignItems: 'center'}]}>
-                <TextInput style={style}>{content}</TextInput>
-            </View>
-        )
-    }
-    else {
-        return (
-            <View style={[{width: (width * 10), alignItems: 'center'}]}>
-                <Text style={style}>{content}</Text>
-            </View>
-        )
+function ExercisesBlock(exercises) {
+    
+    // Weird adaptation because the "exercises" from the prop is encapsulating the actual "exercises" variable.
+    var workoutExercises = exercises.exercises;
+    var exerciseBlocks = [];
+
+    for (i = 0; i < workoutExercises.length; i++) {
+        exerciseBlocks.push(<ExerciseBlock exercise={workoutExercises[i]} key={i}/>);
     };
+
+    return (exerciseBlocks);
+};
+
+function ExerciseBlock(props) {
+    const [exerciseName, setExerciseName]   = useState(props.exercise.getExercise());
+    const [exerciseSets, setExerciseSets]   = useState(props.exercise.getSets());
+    const [exerciseNotes, setExerciseNotes] = useState(props.exercise.getNotes());
+
+  return (
+    <View style={[{marginBottom:40}]}>
+        <View style={[styles.exerciseTitleContainer, styles.containerRow]}>
+            <TextInput style={styles.exerciseTitle} value={exerciseName} onChangeText={newExerciseName => setExerciseName(newExerciseName)}/>
+            <Text> </Text>
+            <Icon name='edit' size={15}/>
+        </View>
+
+        {/* Caption line */}
+        <View style={[styles.exerciseCaptionContainer, styles.containerRow]}>
+            <GridCell width={3}> 
+                <Text style={styles.exerciseCaption}>Set</Text> 
+            </GridCell>
+            <GridCell width={8}> 
+                <Text style={styles.exerciseCaption}>Previous</Text> 
+            </GridCell>
+            <GridCell width={5}> 
+                <Text style={styles.exerciseCaption}>Reps</Text> 
+            </GridCell>
+            <GridCell width={5}> 
+                <Text style={styles.exerciseCaption}>Weight</Text> 
+            </GridCell>
+            <GridCell width={9}> 
+                <Text style={styles.exerciseCaption}>Best Set</Text> 
+            </GridCell>
+            <GridCell width={2}> 
+                <Icon name='check' size ={22}/>
+            </GridCell>
+        </View>
+
+        <SetRows sets={exerciseSets}/>
+
+        <View style={styles.exerciseAddContainer}>
+            <Text style={styles.exerciseAdd} onPress={() => Alert.alert("Add Set")}>Add Set</Text>
+        </View>
+
+        <View style={styles.exerciseFooterContainer}>
+            <View style={styles.containerRow}>
+                <Text style={[{fontWeight: 'bold', fontSize: 14,}]}>Notes </Text>
+                <Icon name='notes' size={13} />
+            </View>
+            <TextInput 
+                style={[styles.exerciseNotes, styles.multilineText]}
+                value={exerciseNotes}
+                onChangeText={newExerciseNotes => setExerciseNotes(newExerciseNotes)}
+                placeholder="Write notes here."
+                multiline
+            />
+        </View>
+    </View>
+  ); 
+};
+
+function SetRows(sets){
+    
+    workoutSets = sets.sets;
+    setRows = [];
+
+    for (i = 0; i < workoutSets.length; i++) {
+        // const [setReps, setSetReps]     = useState(workoutSets[i].reps);
+        // const [setWeight, setSetWeight] = useState(workoutSets[i].weight);
+        const [setReps, setSetReps]     = useState("");
+        const [setWeight, setSetWeight] = useState("");
+
+        setRows.push(
+            <View style={[styles.exerciseLineContainer, styles.containerRow]}>
+                <GridCell width={3}> 
+                    <Text style={styles.exerciseLine}>{workoutSets[i].setNumber}</Text> 
+                </GridCell>
+                <GridCell width={8}> 
+                    <Text style={styles.exerciseLine}>{workoutSets[i].reps} x {workoutSets[i].weight}</Text> 
+                </GridCell>
+                <GridCell width={5}> 
+                    <TextInput style={styles.exerciseLineEditable} value={setReps} onChangeText={newSetReps => setSetReps(newSetReps)}/> 
+                </GridCell>
+                <GridCell width={5}> 
+                    <TextInput style={styles.exerciseLineEditable} value={setWeight} onChangeText={newSetWeight => setSetWeight(newSetWeight)}/> 
+                </GridCell>
+                <GridCell width={9}> 
+                    <Text style={styles.exerciseLine}>{workoutSets[i].bestSetReps} x {workoutSets[i].bestSetWeight}</Text> 
+                </GridCell>
+                <GridCell width={2}> 
+                    <Icon name='check' size ={20} onPress={()=>{Alert.alert("Confirm Set")}}/>
+                </GridCell>
+            </View>
+        );
+    };
+
+    return (setRows);
+
+};
+
+const GridCell = ({width, children}) => {
+    return (
+        <View style={[{width: (width * 10), alignItems: 'center'}]}>
+            {children}
+        </View>
+    )
 };
 
 const AppBar = ({ navigation }) => {

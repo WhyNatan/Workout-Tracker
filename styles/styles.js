@@ -62,7 +62,7 @@ export const styles = StyleSheet.create({
     fontSize: 14,
   },
   exerciseLineContainer: {
-    height: 35,
+    height: 36,
     paddingLeft:10,
     padding:5,
     backgroundColor: '#C6C6C6',
@@ -71,12 +71,22 @@ export const styles = StyleSheet.create({
   exerciseLine: {
     fontSize: 13,
   },
+  // exerciseLineEditable: {
+  //   fontSize: 13,
+  //   backgroundColor: '#FFFF',
+  //   borderRadius: 4,
+  //   height: 24,
+  //   width: 25,
+  //   textAlign: 'center',
+  // },
   exerciseLineEditable: {
     fontSize: 13,
     backgroundColor: '#FFFF',
     borderRadius: 4,
     height: 24,
-    width: 25,
+    // width: 25,
+    minWidth: 25,
+    maxWidth: 50,
     textAlign: 'center',
   },
   exerciseAddContainer: {
@@ -112,5 +122,18 @@ export const styles = StyleSheet.create({
   },
   multilineText: {
     minHeight: 40
+  },
+  addExerciseContainer: {
+    width: screenWidth - 40,
+    height: 50,
+    marginBottom: 100,
+    backgroundColor: '#C6C6C6',
+    borderRadius: 5,
+    padding: 10,
+  },
+  addExercise: {
+    alignSelf:'center',
+    fontWeight: 'bold',
+    fontSize: 21,
   },
 });
