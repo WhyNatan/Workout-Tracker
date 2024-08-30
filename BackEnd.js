@@ -1,10 +1,15 @@
 import jsonData from "./storage/workouts.json";
 
 class Workout {
-    constructor(bodypart, exercises){ 
+    constructor(workoutId, bodypart, exercises){ 
+        this.workoutId = workoutId;
         this.bodypart = bodypart;
         this.exercises = exercises;
         console.log(`Workout for ${this.bodypart} created.`)
+    };
+
+    getWorkoutId() {
+        return this.workoutId;
     };
 
     getBodypart() {
@@ -14,13 +19,30 @@ class Workout {
     getExercises() {
         return this.exercises;
     };
+
+    getExercise(exerciseId) {
+
+        for (i = 0; i < this.exercises.length; i++) {
+            if (this.exercises[i].exerciseId === exerciseId) {
+                return this.exercises[i];
+            };
+        };
+        
+        // Return false in case of not finding a workout.
+        return false;
+    };
 };
 
 class Exercise {
-    constructor(exercise, sets, notes) {
+    constructor(exerciseId, exercise, sets, notes) {
+        this.exerciseId = exerciseId;
         this.exercise = exercise;
         this.sets = sets;
         this.notes = notes;
+    };
+
+    getExerciseId() {
+        return this.exerciseId;
     };
 
     getExercise() {
@@ -31,8 +53,35 @@ class Exercise {
         return this.sets;
     };
 
+    getSet(setNumber) {
+        for (i = 0; i < this.sets.length; i++) {
+            if (this.sets[i].setNumber === setNumber) {
+                return this.sets[i];
+            };
+        };
+        
+        // Return false in case of not finding a workout.
+        return false;
+    };
+
     getNotes() {
         return this.notes;
+    };
+
+    setExerciseId(exerciseId) {
+        this.exerciseId = exerciseId;
+    };
+
+    setExercise(exercise) {
+        this.exercise = exercise;
+    };
+
+    setSets(sets) {
+        this.sets = sets;
+    };
+
+    setNotes(notes) {
+        this.notes = notes;
     };
 };
 
@@ -69,84 +118,96 @@ class Set {
     getBestSetWeight() {
         return this.bestSetWeight;
     };
+
+    setReps(reps) {
+        this.reps = reps;
+    };
+
+    setWeight(weight) {
+        this.weight = weight;
+    };
 };
 
-export function getWorkouts() {
-    var json = [];
-    var workouts = [];
-    var exercises = [];
-    var sets = [];
+class BackEndManagerClass {
+    constructor(workouts) {
+        this.workouts = workouts;
+    };
 
-    json = jsonData;
+    getWorkouts() {
+        return this.workouts;
+    };
 
-    for (i = 0; i < json.workouts.length; i++) {
-        
-        exercises = [];
-        for (j = 0; j < json.workouts[i].exercises.length; j++) {
-            
-            sets = [];
-            for (k = 0; k < json.workouts[i].exercises[j].sets.length; k++) {
-                sets.push(new Set(
-                    setNumber     = json.workouts[i].exercises[j].sets[k].setNumber,
-                    order         = json.workouts[i].exercises[j].sets[k].order,
-                    reps          = json.workouts[i].exercises[j].sets[k].reps,
-                    weight        = json.workouts[i].exercises[j].sets[k].weight, 
-                    bestSetReps   = json.workouts[i].exercises[j].sets[k].bestSetReps, 
-                    bestSetWeight = json.workouts[i].exercises[j].sets[k].bestSetWeight, 
-                ));
+    getWorkout(workoutId) {
+
+        for (i = 0; i < this.workouts.length; i++) {
+            if (this.workouts[i].workoutId === workoutId) {
+                return this.workouts[i];
             };
+        };
+        
+        // Return false in case of not finding a workout.
+        return false;
+    };
 
-            exercises.push(new Exercise(
-                exercise = json.workouts[i].exercises[j].exercise, 
-                sets     = sets, 
-                notes    = json.workouts[i].exercises[j].notes
+    saveWorkout(workout) {
+        console.log(workout);
+    };
+
+    saveWorkoutExerciseSet(workoutId, exerciseId, workoutSetNumber, newSetReps, newSetWeight) {
+        // console.log(`Saving workout for: workoutId: ${workoutId}, exerciseId: ${exerciseId}, workoutSetNumber: ${workoutSetNumber}, newSetReps: ${newSetReps}, newSetWeight: ${newSetWeight}`);
+        try {
+            var updatedWorkout = this.getWorkout(workoutId);
+            var updatedExercise = updatedWorkout.getExercise(exerciseId);
+            var updatedSet = updatedExercise.getSet(workoutSetNumber);
+            
+            // Verify the Set was found.
+            if (updatedSet == false) {
+                console.error("Set wasn't found. Not able to update.")
+                return 0;
+            }
+
+            updatedSet.setReps(newSetReps);
+            updatedSet.setWeight(newSetWeight);
+        } catch(e) {
+            console.error(e);
+        }
+    };
+};
+
+// Get the workouts from the backend and create the Manager for the pages to use.
+var json = [];
+var workouts = [];
+var exercises = [];
+var sets = [];
+
+json = jsonData;
+
+for (i = 0; i < json.workouts.length; i++) {
+    
+    exercises = [];
+    for (j = 0; j < json.workouts[i].exercises.length; j++) {
+        
+        sets = [];
+        for (k = 0; k < json.workouts[i].exercises[j].sets.length; k++) {
+            sets.push(new Set(
+                setNumber     = json.workouts[i].exercises[j].sets[k].setNumber,
+                order         = json.workouts[i].exercises[j].sets[k].order,
+                reps          = json.workouts[i].exercises[j].sets[k].reps,
+                weight        = json.workouts[i].exercises[j].sets[k].weight, 
+                bestSetReps   = json.workouts[i].exercises[j].sets[k].bestSetReps, 
+                bestSetWeight = json.workouts[i].exercises[j].sets[k].bestSetWeight, 
             ));
         };
 
-        workouts.push(new Workout(bodypart = json.workouts[i].bodypart, exercises = exercises));
+        exercises.push(new Exercise(
+            exerciseId  = json.workouts[i].exercises[j].exerciseId, 
+            exercise    = json.workouts[i].exercises[j].exercise, 
+            sets        = sets, 
+            notes       = json.workouts[i].exercises[j].notes
+        ));
     };
 
-    return (workouts);
+    workouts.push(new Workout(workoutId = json.workouts[i].workoutId, bodypart = json.workouts[i].bodypart, exercises = exercises));
 };
 
-export function createWorkout(bodypart) {
-
-    var sets = [];
-    var exercises = [];
-
-    switch (bodypart) {
-        case 'Chest':
-            sets.push(new Set(exercise = 'Bench Press', setNumber = 1, order = 1, reps = 5, weight = 60, bestSetReps = 12, bestSetWeight = 60));
-            sets.push(new Set(exercise = 'Bench Press', setNumber = 2, order = 1, reps = 5, weight = 60, bestSetReps = 6, bestSetWeight = 60));
-
-            exercises.push(new Exercise(exercise = 'Bench Press', sets = sets, notes = 'No notes.'));
-
-            sets = [];
-            sets.push(new Set(exercise = 'Incline Bench Press', setNumber = 1, order = 1, reps = 10, weight = 50, bestSetReps = 11, bestSetWeight = 50));
-            sets.push(new Set(exercise = 'Incline Bench Press', setNumber = 2, order = 1, reps = 7, weight = 50, bestSetReps = 8, bestSetWeight = 50));
-
-            exercises.push(new Exercise(exercise = 'Incline Bench Press', sets = sets, notes = 'No notes, again.'));
-
-            sets = [];
-            sets.push(new Set(exercise = 'Crucifixo', setNumber = 1, order = 1, reps = 9, weight = 20, bestSetReps = 14, bestSetWeight = 20));
-            sets.push(new Set(exercise = 'Crucifixo', setNumber = 2, order = 1, reps = 6, weight = 20, bestSetReps = 10, bestSetWeight = 20));
-
-            exercises.push(new Exercise(exercise = 'Crucifixo', sets = sets, notes = 'No notes, once again.'));
-
-            sets = [];
-            sets.push(new Set(exercise = 'Chest Pull Machine', setNumber = 1, order = 1, reps = 10, weight = '13P', bestSetReps = 12, bestSetWeight = '13P'));
-            sets.push(new Set(exercise = 'Chest Pull Machine', setNumber = 2, order = 1, reps = 7, weight = '13P', bestSetReps = 10, bestSetWeight = '13P'));
-
-            exercises.push(new Exercise(exercise = 'Chest Pull Machine', sets = sets, notes = 'No notes, one more time.'));
-
-            var workout = new Workout(bodypart = bodypart, exercises = exercises);
-
-            break;
-        default:
-            var workout = new Workout(bodypart = 'New Workout', exercises = []);
-            console.log("defaulted");
-            break;
-    };
-
-    return(workout);
-};
+export const BackEndManager = new BackEndManagerClass(workouts = workouts);

@@ -1,9 +1,11 @@
 {
     "workouts":[
         {
+        "workoutId":1,
         "bodypart":"Chest",
         "exercises":[
             {
+            "exerciseId":1,
             "exercise":"Bench Press",
             "sets":[{
                 "setNumber":1,
@@ -24,6 +26,7 @@
             "notes":"No notes."
             },
             {
+            "exerciseId":2,
             "exercise":"Incline Bench Press",
             "sets":[{
                 "setNumber":1,
@@ -44,6 +47,7 @@
             "notes":"No notes, again."
             },
             {
+            "exerciseId":3,
             "exercise":"Crucifixo",
             "sets":[{
                 "setNumber":1,
@@ -64,6 +68,7 @@
             "notes":"No notes, once again."
             },
             {
+            "exerciseId":4,
             "exercise":"Chest Pull Machine",
             "sets":[{
                 "setNumber":1,
@@ -85,9 +90,11 @@
             }
         ]},
         {
+        "workoutId":2,
         "bodypart":"Tricep",
         "exercises":[
             {
+            "exerciseId":1,
             "exercise":"One Hand Tricep Extension",
             "sets":[{
                 "setNumber":1,
@@ -108,6 +115,7 @@
             "notes":""
             },
             {
+            "exerciseId":2,
             "exercise":"Rope Pulldown",
             "sets":[{
                 "setNumber":1,

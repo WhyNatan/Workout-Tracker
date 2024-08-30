@@ -1,16 +1,22 @@
 import '../gesture-handler';
 import '../BackEnd';
+import { BackEndManager} from '../BackEnd';
 import { React, useState } from 'react';
 import { View, Text, Alert, TextInput, TouchableNativeFeedback, Button } from 'react-native';
 import { styles } from '../styles/styles';
 import { Icon } from '@rneui/base';
 import { ScrollView } from 'react-native-gesture-handler';
 
+// Keeping it global to ease the use of it in the submit function.
+var WorkoutId;
+
 export function WorkoutPage({ navigation, route }) {
     // var workout = JSON.stringify(route.params);
     var workout = route.params;
     var workoutBodypart  = workout.getBodypart();
     var workoutExercises = workout.getExercises();
+    
+    WorkoutId = workout.getWorkoutId();
 
     return (
 
@@ -53,6 +59,8 @@ function ExerciseBlock(props) {
     const [exerciseSets, setExerciseSets]   = useState(props.exercise.getSets());
     const [exerciseNotes, setExerciseNotes] = useState(props.exercise.getNotes());
 
+    const exerciseId = props.exercise.getExerciseId();
+
   return (
     <View style={[{marginBottom:40}]}>
         <View style={[styles.exerciseTitleContainer, styles.containerRow]}>
@@ -83,7 +91,8 @@ function ExerciseBlock(props) {
             </GridCell>
         </View>
 
-        <SetRows sets={exerciseSets}/>
+        {/* <SetsView sets={exerciseSets}/> */}
+        <SetsView sets={exerciseSets} exerciseId={exerciseId}/>
 
         <View style={styles.exerciseAddContainer}>
             <Text style={styles.exerciseAdd} onPress={() => Alert.alert("Add Set")}>Add Set</Text>
@@ -106,19 +115,22 @@ function ExerciseBlock(props) {
   ); 
 };
 
-function SetRows(sets){
-    
-    workoutSets = sets.sets;
-    setRows = [];
+// function SetsView(sets){
+// function SetsView(sets, currentExerciseId) {
+function SetsView(props) {
+
+    var exerciseId = props.exerciseId;
+    // var workoutSets = sets.sets;
+    var workoutSets = props.sets;
+    var setRows = [];
 
     for (i = 0; i < workoutSets.length; i++) {
-        // const [setReps, setSetReps]     = useState(workoutSets[i].reps);
-        // const [setWeight, setSetWeight] = useState(workoutSets[i].weight);
+        const setNumber = workoutSets[i].setNumber;
         const [setReps, setSetReps]     = useState("");
         const [setWeight, setSetWeight] = useState("");
 
         setRows.push(
-            <View style={[styles.exerciseLineContainer, styles.containerRow]}>
+            <View style={[styles.exerciseLineContainer, styles.containerRow]} key={i}>
                 <GridCell width={3}> 
                     <Text style={styles.exerciseLine}>{workoutSets[i].setNumber}</Text> 
                 </GridCell>
@@ -135,14 +147,13 @@ function SetRows(sets){
                     <Text style={styles.exerciseLine}>{workoutSets[i].bestSetReps} x {workoutSets[i].bestSetWeight}</Text> 
                 </GridCell>
                 <GridCell width={2}> 
-                    <Icon name='check' size ={20} onPress={()=>{Alert.alert("Confirm Set")}}/>
+                    <Icon name='check' size={20} onPress={()=>{submitSet(WorkoutId, exerciseId, setNumber, setReps, setWeight)}}/>
                 </GridCell>
             </View>
         );
     };
 
     return (setRows);
-
 };
 
 const GridCell = ({width, children}) => {
@@ -172,4 +183,8 @@ const AppBar = ({ navigation }) => {
             </View>
             <View style={[{ paddingBottom: 15 }]}></View>
         </View>);
+};
+
+function submitSet(workoutId, exerciseId, workoutSetNumber, newSetReps, newSetWeight) {
+    BackEndManager.saveWorkoutExerciseSet(workoutId, exerciseId, workoutSetNumber, newSetReps, newSetWeight);
 };

@@ -1,12 +1,12 @@
 import '../gesture-handler';
-import { getWorkouts } from '../BackEnd';
+import { BackEndManager } from '../BackEnd';
 import { Text, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighlight, TouchableNativeFeedback } from 'react-native';
 import { styles } from '../styles/styles';
 
 function getBackEnd() {
     var workouts = [];
 
-    workouts = getWorkouts();
+    workouts = BackEndManager.getWorkouts();
 
     return (workouts);
 };
@@ -29,6 +29,7 @@ export function HomePage({ navigation }) {
 };
 
 const AppBar = () => {
+
     return (
         <View style={styles.container}>
             {/* Space at the top to adjust for the bar */}
