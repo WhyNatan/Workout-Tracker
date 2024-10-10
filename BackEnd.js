@@ -1,19 +1,19 @@
 import jsonData from "./storage/workouts.json";
 
 class Workout {
-    constructor(workoutId, bodypart, exercises){ 
+    constructor(workoutId, bodyPart, exercises){ 
         this.workoutId = workoutId;
-        this.bodypart = bodypart;
+        this.bodyPart = bodyPart;
         this.exercises = exercises;
-        console.log(`Workout for ${this.bodypart} created.`)
+        console.log(`Workout for ${this.bodyPart} created.`)
     };
 
     getWorkoutId() {
         return this.workoutId;
     };
 
-    getBodypart() {
-        return this.bodypart;
+    getBodyPart() {
+        return this.bodyPart;
     };
 
     getExercises() {
@@ -168,10 +168,63 @@ class BackEndManagerClass {
 
             updatedSet.setReps(newSetReps);
             updatedSet.setWeight(newSetWeight);
+            this.saveToLocalStorage()
         } catch(e) {
             console.error(e);
         }
     };
+
+    async saveToLocalStorage() {
+
+        if (typeof window !== 'undefined') {
+            console.log('we are running on the client');
+
+            var myJSON = JSON.stringify(this.workouts);
+            var filePath = "C:\Users\Natan\Documents\Codes\react_project\workout-tracker\storage\workouts.json";
+
+            // var RNFS = require('react-native-fs');
+            // // create a path you want to write to
+            // var path = RNFS.DocumentDirectoryPath + '/test.txt';
+
+            // // write the file
+            // RNFS.writeFile(path, 'Lorem ipsum dolor sit amet', 'utf8')
+            // .then((success) => {
+            // console.log('FILE WRITTEN!');
+            // })
+            // .catch((err) => {
+            // console.log(err.message);
+            // });
+
+            // try {
+            //     localStorage.setItem("myJson", myJSON);
+            // } catch(e) {
+            //     console.error(e.message);
+            // };
+            
+            // retreivedJson = localStorage.getItem("myJson");
+            // console.log(retreivedJson);
+            // await writeFile(filePath, myJSON, "utf8");
+
+            // const fs = require('node:fs');
+            // const content = myJSON;
+            // fs.writeFile(filePath, content, err => {
+            // if (err) {
+            //     console.error(err);
+            // } else {
+            //     // file written successfully
+            // }
+            // });
+
+        } else {
+            console.log('we are running on the server');
+        }
+
+        // var myJSON = JSON.stringify(this.workouts);
+        // localStorage.setItem("myJson", myJSON);
+        // retreivedJson = localStorage.getItem("myJson");
+        // console.log(retreivedJson);
+    };
+
 };
 
 // Get the workouts from the backend and create the Manager for the pages to use.
@@ -207,7 +260,7 @@ for (i = 0; i < json.workouts.length; i++) {
         ));
     };
 
-    workouts.push(new Workout(workoutId = json.workouts[i].workoutId, bodypart = json.workouts[i].bodypart, exercises = exercises));
+    workouts.push(new Workout(workoutId = json.workouts[i].workoutId, bodyPart = json.workouts[i].bodyPart, exercises = exercises));
 };
 
 export const BackEndManager = new BackEndManagerClass(workouts = workouts);

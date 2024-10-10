@@ -1,18 +1,77 @@
 import '../gesture-handler';
+import { connectToDatabase, createTables } from '../db/database.tsx';
+import { addWorkout, getWorkouts } from '../db/workouts.tsx';
+import { addExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
 import { BackEndManager } from '../BackEnd';
 import { Text, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighlight, TouchableNativeFeedback } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
 import { styles } from '../styles/styles';
+import { useSQLiteContext } from 'expo-sqlite';
 
-function getBackEnd() {
+async function getBackEnd(db) {
+    
+    // console.log("inside getBackEnd");
+
+    var completeWorkouts = [];
     var workouts = [];
+    var exercises = [];
 
-    workouts = BackEndManager.getWorkouts();
+    try {
+        workouts = await getWorkouts(db);
 
-    return (workouts);
+        // console.log("workouts var:", workouts);
+
+        // Getting the exercises of the workouts
+        for (i = 0; i < workouts.length; i++) {
+            exercises = await getExercisesOfWorkout(db, workouts[i].workoutId);
+            
+            completeWorkouts.push({bodyPart: workouts[i].bodyPart, workoutId: workouts[i].workoutId, exercises: exercises});
+        };
+    } catch (e) {
+        console.error(e);
+    };
+
+    // console.log("GetBackEnd: ", completeWorkouts);]\
+
+    return (completeWorkouts);
+};
+
+async function addWorkoutButton(db) {
+    var workout = {
+        workoutId: 1,
+        bodyPart: "Chest"
+    };
+
+    var exercise = {
+        exerciseId: 1,
+        workoutId: 1,
+        exercise: "Bench Press",
+        notes: "No notes.",
+    };
+
+    // await addWorkout(db, workout);
+    // await addExercise(db, exercise);
+
+    var workouts = await getWorkouts(db);
+    var exercises = await getExercises(db);
+
+    console.log("All Workouts: ", workouts);
+    console.log("All Exercises: ", exercises);
 };
 
 export function HomePage({ navigation }) {
-    var workouts = getBackEnd();
+    const db = useSQLiteContext();
+    const [workouts, setWorkouts] = useState([]);
+
+    useEffect(() => {
+        async function setup() {
+            var temp_workouts = await getBackEnd(db);
+            setWorkouts(temp_workouts);
+            // console.log("HomePage workouts:", workouts);
+        };
+        setup();
+    }, []);
+    // }, [workouts]);
 
     return (
         <View style={{flex:1}}>
@@ -23,12 +82,12 @@ export function HomePage({ navigation }) {
                 <Workouts navigation={navigation} workouts={workouts}/>
 
             </ScrollView>
-        </View>
-        
+        </View> 
     );
 };
 
 const AppBar = () => {
+    const db = useSQLiteContext();
 
     return (
         <View style={styles.container}>
@@ -40,7 +99,8 @@ const AppBar = () => {
                     <Text style={styles.appbarTitle}>Workout Tracker</Text>
                 </View>
                 <View style={[{ paddingRight: 20 }]}>
-                    <Text onPress={() => Alert.alert('--Add Workout--')}>+ Add Workout</Text>
+                    {/* <Text onPress={() => Alert.alert('--Add Workout--')}>+ Add Workout</Text> */}
+                    <Text onPress={() => addWorkoutButton(db)}>+ Add Workout</Text>
                 </View>
             </View>
             <View style={[{ paddingBottom: 15 }]}></View>
@@ -50,31 +110,35 @@ const AppBar = () => {
 function Workouts({navigation, workouts = []}) {
     // Transform the workouts information into tabs for navigation.
 
+    // console.log("inside Workouts:", workouts);
     workoutViews = [];
 
     for (i = 0; i < workouts.length; i++) {
-        workoutViews.push(<WorkoutTab navigation={navigation} key={i} workout={workouts[i]}/>);
+        workoutViews.push(<WorkoutTab navigation={navigation} workout={workouts[i]} key={i}/>);
     };
 
     return (workoutViews);
 };
 
-function WorkoutTab({ navigation, key, workout }) {
+function WorkoutTab({ navigation, workout, key }) {
 
     var exercisesText = [];
-    var workoutBodypart  = workout.getBodypart();
-    var workoutExercises = workout.getExercises();
+    var workoutBodyPart  = workout.bodyPart;
+    var workoutExercises = workout.exercises;
 
-    // Limit the exercises to a max of 3 for size purposes.
-    for (i = 0; i < workoutExercises.length && i < 3 ; i++) {
-        exercisesText.push(<Text>- {workoutExercises[i].exercise}</Text>);
-    }
+    // Not run through length if there are no exercises.
+    if (workoutExercises != undefined) {
+        // Limit the exercises to a max of 3 for size purposes.
+        for (i = 0; i < workoutExercises.length && i < 3 ; i++) {
+            exercisesText.push(<Text>- {workoutExercises[i].exercise}</Text>);
+        }
+    };
 
     return (
         <View style={[{ paddingBottom: 15 }]}>
-            <TouchableNativeFeedback onPress={() => navigation.navigate('Workout', workout)}>
+            <TouchableNativeFeedback onPress={() => navigation.navigate('Workout', workout.workoutId)}>
                 <View style={styles.workoutContainer}>
-                    <Text style={styles.setTitleContainer}>{workoutBodypart}</Text>
+                    <Text style={styles.setTitleContainer}>{workoutBodyPart}</Text>
                     {exercisesText}
                 </View>
             </TouchableNativeFeedback>

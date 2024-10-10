@@ -1,6 +1,8 @@
 import '../gesture-handler';
 import '../BackEnd';
 import { BackEndManager} from '../BackEnd';
+import { addWorkout, getWorkouts } from '../db/workouts.tsx';
+import { addExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
 import { React, useState } from 'react';
 import { View, Text, Alert, TextInput, TouchableNativeFeedback, Button } from 'react-native';
 import { styles } from '../styles/styles';
@@ -10,13 +12,40 @@ import { ScrollView } from 'react-native-gesture-handler';
 // Keeping it global to ease the use of it in the submit function.
 var WorkoutId;
 
+async function getBackEnd(db) {
+    
+    // console.log("inside getBackEnd");
+
+    var completeWorkouts = [];
+    var workouts = [];
+    var exercises = [];
+
+    try {
+        workouts = await getWorkouts(db);
+
+        // console.log("workouts var:", workouts);
+
+        // Getting the exercises of the workouts
+        for (i = 0; i < workouts.length; i++) {
+            exercises = await getExercisesOfWorkout(db, workouts[i].workoutId);
+            
+            completeWorkouts.push({bodyPart: workouts[i].bodyPart, workoutId: workouts[i].workoutId, exercises: exercises});
+        };
+    } catch (e) {
+        console.error(e);
+    };
+
+    // console.log("GetBackEnd: ", completeWorkouts);]\
+
+    return (completeWorkouts);
+};
+
 export function WorkoutPage({ navigation, route }) {
-    // var workout = JSON.stringify(route.params);
-    var workout = route.params;
-    var workoutBodypart  = workout.getBodypart();
+    var workoutId = route.params;
+    var workoutBodyPart  = workout.getBodyPart();
     var workoutExercises = workout.getExercises();
     
-    WorkoutId = workout.getWorkoutId();
+    WorkoutId = workoutId;
 
     return (
 
@@ -24,7 +53,7 @@ export function WorkoutPage({ navigation, route }) {
             <AppBar navigation={navigation}/>
 
             <ScrollView style={[{paddingLeft: 20, paddingTop: 10}]}>
-                <TextInput style={styles.exerciseBodyPart} value={workoutBodypart}/>
+                <TextInput style={styles.exerciseBodyPart} value={workoutBodyPart}/>
 
                 <ExercisesBlock exercises={workoutExercises}/>
 

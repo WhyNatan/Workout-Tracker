@@ -2,7 +2,7 @@
     "workouts":[
         {
         "workoutId":1,
-        "bodyPart":"Chest",
+        "bodypart":"Chest",
         "exercises":[
             {
             "exerciseId":1,
@@ -91,7 +91,7 @@
         ]},
         {
         "workoutId":2,
-        "bodyPart":"Tricep",
+        "bodypart":"Tricep",
         "exercises":[
             {
             "exerciseId":1,
