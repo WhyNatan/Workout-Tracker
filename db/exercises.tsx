@@ -27,8 +27,8 @@ export const getExercises = async (db: SQLite.SQLiteDatabase): Promise<Exercise[
     //   console.log("getWorkouts, workouts:", workouts);
       return exercises;
   } catch (error) {
-      console.error(error)
-      throw Error("Failed to get Exercises from database")
+      console.error(error);
+      throw Error("Failed to get Exercises from database");
   };
 };
 
@@ -38,7 +38,7 @@ export const getExercisesOfWorkout = async (db: SQLite.SQLiteDatabase, workoutId
         // console.log("getExercisesOfWorkout, Exercises:", exercises);
         return exercises;
     } catch (error) {
-        console.error(error)
+        console.error(error);
         throw Error(`Failed to get Exercises of workoutId ${workoutId} from database`);
     };
   };

@@ -1,54 +1,85 @@
 import '../gesture-handler';
 import '../BackEnd';
 import { BackEndManager} from '../BackEnd';
-import { addWorkout, getWorkouts } from '../db/workouts.tsx';
+import { addWorkout, getWorkouts, getWorkout } from '../db/workouts.tsx';
 import { addExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
-import { React, useState } from 'react';
+import { getSetsOfExercise } from '../db/sets.tsx';
+import { useCallback, useEffect, React, useState } from 'react';
 import { View, Text, Alert, TextInput, TouchableNativeFeedback, Button } from 'react-native';
 import { styles } from '../styles/styles';
 import { Icon } from '@rneui/base';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useSQLiteContext } from 'expo-sqlite';
 
 // Keeping it global to ease the use of it in the submit function.
 var WorkoutId;
 
-async function getBackEnd(db) {
+async function getWorkoutBodyPart(db, workoutId) {
+
+    try {
+        var workout = await getWorkout(db, workoutId);
+
+        return (workout.bodyPart);
+    } catch (e) {
+        console.error(e);
+    };
+};
+
+async function getWorkoutExercises(db, workoutId) {
     
     // console.log("inside getBackEnd");
 
-    var completeWorkouts = [];
-    var workouts = [];
+    var completeExercises = [];
     var exercises = [];
 
     try {
-        workouts = await getWorkouts(db);
-
-        // console.log("workouts var:", workouts);
+        exercises = await getExercisesOfWorkout(db, workoutId);
 
         // Getting the exercises of the workouts
-        for (i = 0; i < workouts.length; i++) {
-            exercises = await getExercisesOfWorkout(db, workouts[i].workoutId);
+        for (i = 0; i < exercises.length; i++) {
+            sets = await getSetsOfExercise(db, exercises[i].exerciseId);
             
-            completeWorkouts.push({bodyPart: workouts[i].bodyPart, workoutId: workouts[i].workoutId, exercises: exercises});
+            completeExercises.push({exercise: exercises[i].exercise, sets: sets, notes: exercises[i].notes});
         };
     } catch (e) {
         console.error(e);
     };
 
-    // console.log("GetBackEnd: ", completeWorkouts);]\
+    return (completeExercises);
+};
 
-    return (completeWorkouts);
+async function addEmptyExercise(db) {
+
+    // var tempExercise = {
+    //     exerciseId: number;
+    //     workoutId: number;
+    //     exercise: string;
+    //     notes: string;
+    // }
+
+    await addExercise(db);
 };
 
 export function WorkoutPage({ navigation, route }) {
     var workoutId = route.params;
-    var workoutBodyPart  = workout.getBodyPart();
-    var workoutExercises = workout.getExercises();
     
     WorkoutId = workoutId;
 
-    return (
+    const db = useSQLiteContext();
+    const [workoutBodyPart, setWorkoutBodyPart] = useState([]);
+    const [workoutExercises, setWorkoutExercises] = useState([]);
 
+    useEffect(() => {
+        async function setup() {
+            var temp_workoutBodyPart = await getWorkoutBodyPart(db, workoutId);
+            var temp_workoutExercises = await getWorkoutExercises(db, workoutId);
+            setWorkoutBodyPart(temp_workoutBodyPart);
+            setWorkoutExercises(temp_workoutExercises);
+        };
+        setup();
+    }, []);
+
+    return (
         <View style={[{flex:1}]}>
             <AppBar navigation={navigation}/>
 
@@ -57,7 +88,7 @@ export function WorkoutPage({ navigation, route }) {
 
                 <ExercisesBlock exercises={workoutExercises}/>
 
-                <TouchableNativeFeedback onPress={()=>{Alert.alert("Add Exercise")}}>
+                <TouchableNativeFeedback onPress={()=>{addEmptyExercise()}}>
                     <View style={styles.addExerciseContainer}> 
                         <Text style={styles.addExercise}>
                             Add Exercise
@@ -77,7 +108,7 @@ function ExercisesBlock(exercises) {
     var exerciseBlocks = [];
 
     for (i = 0; i < workoutExercises.length; i++) {
-        exerciseBlocks.push(<ExerciseBlock exercise={workoutExercises[i]} key={i}/>);
+        // exerciseBlocks.push(<ExerciseBlock exercise={workoutExercises[i]} key={i}/>);
     };
 
     return (exerciseBlocks);

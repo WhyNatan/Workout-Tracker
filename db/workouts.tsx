@@ -5,14 +5,18 @@ type Workout = {
     bodyPart: string;
 };
 
-export const addWorkout = async (db: SQLite.SQLiteDatabase, workout: Workout) => {
+export const addWorkout = async (db: SQLite.SQLiteDatabase, bodyPart: string) => {
   const insertQuery = await db.prepareAsync(`
     INSERT INTO Workouts (workoutId, bodyPart)
     VALUES ($workoutId, $bodyPart)
   `);
 
   try {
-    return await insertQuery.executeAsync({ $workoutId: workout.workoutId, $bodyPart: workout.bodyPart });
+    // Find the biggest workout Id and add 1 for an auto increment.
+    var biggestWorkoutId:number = await db.getFirstAsync(`SELECT MAX(workoutId) FROM Workouts;`);
+    biggestWorkoutId++;
+
+    return await insertQuery.executeAsync({ $workoutId: biggestWorkoutId, $bodyPart: bodyPart });
   } catch (error) {
     console.error("Error inside addWorkout:", error);
     throw Error("Failed to add Workout.");
@@ -21,7 +25,7 @@ export const addWorkout = async (db: SQLite.SQLiteDatabase, workout: Workout) =>
 
 export const getWorkout = async (db: SQLite.SQLiteDatabase, workoutId: number): Promise<Workout[]> => {
   try {
-      const workout: Workout[] = await db.getAllAsync(`SELECT * FROM Workouts WHERE workoutId = ${workoutId}`);
+      const workout: Workout[] = await db.getFirstAsync(`SELECT * FROM Workouts WHERE workoutId = ${workoutId}`);
       // console.log("getWorkout, workout:", workouts);
       return workout;
   } catch (error) {
@@ -41,14 +45,14 @@ export const getWorkouts = async (db: SQLite.SQLiteDatabase): Promise<Workout[]>
   }
 };
 
-export const deleteWorkout = async (db: SQLite.SQLiteDatabase, workout: Workout) => {
+export const deleteWorkout = async (db: SQLite.SQLiteDatabase, workoutId: number) => {
   const deleteQuery = await db.prepareAsync(`
     DELETE FROM Workouts
-    WHERE id = $workoutId
+    WHERE workoutId = $workoutId
   `);
 
   try {
-    return await deleteQuery.executeAsync({ $workoutId: workout.workoutId });
+    return await deleteQuery.executeAsync({ $workoutId: workoutId });
   } catch (error) {
     console.error("Error inside deleteWorkout:", error);
     throw Error("Failed to remove Workout.");

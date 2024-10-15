@@ -1,6 +1,6 @@
 import '../gesture-handler';
 import { connectToDatabase, createTables } from '../db/database.tsx';
-import { addWorkout, getWorkouts } from '../db/workouts.tsx';
+import { addWorkout, getWorkouts, deleteWorkout } from '../db/workouts.tsx';
 import { addExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
 import { BackEndManager } from '../BackEnd';
 import { Text, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighlight, TouchableNativeFeedback } from 'react-native';
@@ -37,37 +37,47 @@ async function getBackEnd(db) {
 };
 
 async function addWorkoutButton(db) {
-    var workout = {
-        workoutId: 1,
-        bodyPart: "Chest"
+    await addWorkout(db, "New Workout");
+    checkAllWorkouts(db);
+};
+
+async function checkAllWorkouts(db) {
+    workouts = await getWorkouts(db);
+    console.log(workouts);
+};
+
+async function confirmDeleteWorkout(db, workoutId,) {
+
+    async function deleteConfirmedWorkout() {
+        try {
+            console.log("deleting workout:"+workoutId);
+            await deleteWorkout(db, workoutId);
+        } catch (e) {
+            console.error(e);
+        };
     };
 
-    var exercise = {
-        exerciseId: 1,
-        workoutId: 1,
-        exercise: "Bench Press",
-        notes: "No notes.",
-    };
-
-    // await addWorkout(db, workout);
-    // await addExercise(db, exercise);
-
-    var workouts = await getWorkouts(db);
-    var exercises = await getExercises(db);
-
-    console.log("All Workouts: ", workouts);
-    console.log("All Exercises: ", exercises);
+    // Confirm if a delete was requested or not
+    Alert.alert(
+        '',
+        'Are you sure you want to delete this Workout?',  
+        [
+            {text: 'Yes', onPress: () => deleteConfirmedWorkout(db, workoutId)},
+            {text: 'No', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        ],
+        { cancelable: false },
+    );
 };
 
 export function HomePage({ navigation }) {
     const db = useSQLiteContext();
     const [workouts, setWorkouts] = useState([]);
+    var placeholder;
 
     useEffect(() => {
         async function setup() {
             var temp_workouts = await getBackEnd(db);
             setWorkouts(temp_workouts);
-            // console.log("HomePage workouts:", workouts);
         };
         setup();
     }, []);
@@ -121,6 +131,7 @@ function Workouts({navigation, workouts = []}) {
 };
 
 function WorkoutTab({ navigation, workout, key }) {
+    const db = useSQLiteContext();
 
     var exercisesText = [];
     var workoutBodyPart  = workout.bodyPart;
@@ -136,7 +147,7 @@ function WorkoutTab({ navigation, workout, key }) {
 
     return (
         <View style={[{ paddingBottom: 15 }]}>
-            <TouchableNativeFeedback onPress={() => navigation.navigate('Workout', workout.workoutId)}>
+            <TouchableNativeFeedback onPress={() => navigation.navigate('Workout', workout.workoutId)} onLongPress={() => confirmDeleteWorkout(db, workout.workoutId)}>
                 <View style={styles.workoutContainer}>
                     <Text style={styles.setTitleContainer}>{workoutBodyPart}</Text>
                     {exercisesText}
