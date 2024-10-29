@@ -2,7 +2,7 @@ import '../gesture-handler';
 import '../BackEnd';
 import { BackEndManager} from '../BackEnd';
 import { addWorkout, getWorkouts, getWorkout } from '../db/workouts.tsx';
-import { addExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
+import { addExercise, addEmptyExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
 import { getSetsOfExercise } from '../db/sets.tsx';
 import { useCallback, useEffect, React, useState } from 'react';
 import { View, Text, Alert, TextInput, TouchableNativeFeedback, Button } from 'react-native';
@@ -39,7 +39,7 @@ async function getWorkoutExercises(db, workoutId) {
         for (i = 0; i < exercises.length; i++) {
             sets = await getSetsOfExercise(db, exercises[i].exerciseId);
             
-            completeExercises.push({exercise: exercises[i].exercise, sets: sets, notes: exercises[i].notes});
+            completeExercises.push({exercise: exercises[i].exercise, exerciseId: exercises[i].exerciseId, sets: sets, notes: exercises[i].notes});
         };
     } catch (e) {
         console.error(e);
@@ -48,16 +48,11 @@ async function getWorkoutExercises(db, workoutId) {
     return (completeExercises);
 };
 
-async function addEmptyExercise(db) {
+async function prepareToAddEmptyExercise(db, workoutId, exercises) {
 
-    // var tempExercise = {
-    //     exerciseId: number;
-    //     workoutId: number;
-    //     exercise: string;
-    //     notes: string;
-    // }
-
-    await addExercise(db);
+    // await addExercise(db, workoutId);
+    console.log("getting exercises:", await getExercises(db));
+    
 };
 
 export function WorkoutPage({ navigation, route }) {
@@ -88,7 +83,7 @@ export function WorkoutPage({ navigation, route }) {
 
                 <ExercisesBlock exercises={workoutExercises}/>
 
-                <TouchableNativeFeedback onPress={()=>{addEmptyExercise()}}>
+                <TouchableNativeFeedback onPress={()=>{prepareToAddEmptyExercise(db, workoutId, workoutExercises)}}>
                     <View style={styles.addExerciseContainer}> 
                         <Text style={styles.addExercise}>
                             Add Exercise
@@ -108,18 +103,18 @@ function ExercisesBlock(exercises) {
     var exerciseBlocks = [];
 
     for (i = 0; i < workoutExercises.length; i++) {
-        // exerciseBlocks.push(<ExerciseBlock exercise={workoutExercises[i]} key={i}/>);
+        exerciseBlocks.push(<ExerciseBlock exercise={workoutExercises[i]} key={i}/>);
     };
 
     return (exerciseBlocks);
 };
 
 function ExerciseBlock(props) {
-    const [exerciseName, setExerciseName]   = useState(props.exercise.getExercise());
-    const [exerciseSets, setExerciseSets]   = useState(props.exercise.getSets());
-    const [exerciseNotes, setExerciseNotes] = useState(props.exercise.getNotes());
+    const [exerciseName, setExerciseName]   = useState(props.exercise.exercise);
+    const [exerciseSets, setExerciseSets]   = useState(props.exercise.sets);
+    const [exerciseNotes, setExerciseNotes] = useState(props.exercise.notes);
 
-    const exerciseId = props.exercise.getExerciseId();
+    const exerciseId = props.exercise.exerciseId;
 
   return (
     <View style={[{marginBottom:40}]}>

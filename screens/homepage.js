@@ -1,12 +1,15 @@
 import '../gesture-handler';
 import { connectToDatabase, createTables } from '../db/database.tsx';
-import { addWorkout, getWorkouts, deleteWorkout } from '../db/workouts.tsx';
+import { getWorkoutBiggestId, addWorkout, getWorkouts, deleteWorkout } from '../db/workouts.tsx';
 import { addExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
 import { BackEndManager } from '../BackEnd';
 import { Text, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighlight, TouchableNativeFeedback } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { styles } from '../styles/styles';
 import { useSQLiteContext } from 'expo-sqlite';
+
+// Will get overwritten with a function to refresh the workouts variable that is used to display the info on screen.
+var updateWorkouts;
 
 async function getBackEnd(db) {
     
@@ -37,8 +40,12 @@ async function getBackEnd(db) {
 };
 
 async function addWorkoutButton(db) {
-    await addWorkout(db, "New Workout");
+    var workoutBiggestId = await getWorkoutBiggestId(db);
+
+    await addWorkout(db, `New Workout ${(workoutBiggestId.workoutId + 1)}`);
+
     checkAllWorkouts(db);
+    await updateWorkouts();
 };
 
 async function checkAllWorkouts(db) {
@@ -52,6 +59,7 @@ async function confirmDeleteWorkout(db, workoutId,) {
         try {
             console.log("deleting workout:"+workoutId);
             await deleteWorkout(db, workoutId);
+            await updateWorkouts();
         } catch (e) {
             console.error(e);
         };
@@ -72,13 +80,13 @@ async function confirmDeleteWorkout(db, workoutId,) {
 export function HomePage({ navigation }) {
     const db = useSQLiteContext();
     const [workouts, setWorkouts] = useState([]);
-    var placeholder;
 
     useEffect(() => {
         async function setup() {
             var temp_workouts = await getBackEnd(db);
             setWorkouts(temp_workouts);
         };
+        updateWorkouts = setup;
         setup();
     }, []);
     // }, [workouts]);
@@ -120,7 +128,6 @@ const AppBar = () => {
 function Workouts({navigation, workouts = []}) {
     // Transform the workouts information into tabs for navigation.
 
-    // console.log("inside Workouts:", workouts);
     workoutViews = [];
 
     for (i = 0; i < workouts.length; i++) {
@@ -130,7 +137,7 @@ function Workouts({navigation, workouts = []}) {
     return (workoutViews);
 };
 
-function WorkoutTab({ navigation, workout, key }) {
+function WorkoutTab({ navigation, workout }) {
     const db = useSQLiteContext();
 
     var exercisesText = [];
@@ -141,7 +148,7 @@ function WorkoutTab({ navigation, workout, key }) {
     if (workoutExercises != undefined) {
         // Limit the exercises to a max of 3 for size purposes.
         for (i = 0; i < workoutExercises.length && i < 3 ; i++) {
-            exercisesText.push(<Text>- {workoutExercises[i].exercise}</Text>);
+            exercisesText.push(<Text key={i}>- {workoutExercises[i].exercise}</Text>);
         }
     };
 

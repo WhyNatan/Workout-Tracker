@@ -19,7 +19,38 @@ export const addExercise = async (db: SQLite.SQLiteDatabase, exercise: Exercise)
     console.error("Error inside addExercise:", error);
     throw Error("Failed to add Exercise.");
   };
-}
+};
+
+export const addEmptyExercise = async (db: SQLite.SQLiteDatabase, workoutId: number) => {
+
+  try {
+    // Find the biggest workout Id and add 1 for an auto increment.
+    var biggestExerciseId:number = await db.getFirstAsync(`SELECT MAX(exerciseId) FROM Exercises WHERE workoutId = ${workoutId};`);
+    biggestExerciseId++;
+  } catch(error) {
+    console.error("Error inside addEmptyExercise:", error);
+    throw Error("Failed to find biggest ExerciseId.");
+  };
+
+  var tempExercise: Exercise = {
+    exerciseId: 1,
+    workoutId: workoutId,
+    exercise: "",
+    notes: "",
+  };
+
+  const insertQuery = await db.prepareAsync(`
+    INSERT INTO Exercises (exerciseId, workoutId, exercise, notes)
+    VALUES ($exerciseId, $workoutId, $exercise, $notes)
+  `);
+
+  try {
+    return await insertQuery.executeAsync({ $exerciseId: tempExercise.exerciseId, $workoutId: tempExercise.workoutId, $exercise: tempExercise.exercise, $notes: tempExercise.notes });
+  } catch (error) {
+    console.error("Error inside addExercise:", error);
+    throw Error("Failed to add Exercise.");
+  };
+};
 
 export const getExercises = async (db: SQLite.SQLiteDatabase): Promise<Exercise[]> => {
   try {

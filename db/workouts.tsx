@@ -5,6 +5,17 @@ type Workout = {
     bodyPart: string;
 };
 
+export const getWorkoutBiggestId = async (db: SQLite.SQLiteDatabase): Promise<Workout> => {
+  try {
+    const workoutBiggestId:Workout = await db.getFirstAsync(`SELECT MAX(workoutId) AS workoutId FROM Workouts;`);
+    return workoutBiggestId;
+  }  
+  catch (error) {
+    console.error("Error inside getWorkoutBiggestId:", error)
+    throw Error("Failed to get Workouts from database")
+  }
+};
+
 export const addWorkout = async (db: SQLite.SQLiteDatabase, bodyPart: string) => {
   const insertQuery = await db.prepareAsync(`
     INSERT INTO Workouts (workoutId, bodyPart)
@@ -15,7 +26,6 @@ export const addWorkout = async (db: SQLite.SQLiteDatabase, bodyPart: string) =>
     // Find the biggest workout Id and add 1 for an auto increment.
     var biggestWorkoutId:number = await db.getFirstAsync(`SELECT MAX(workoutId) FROM Workouts;`);
     biggestWorkoutId++;
-
     return await insertQuery.executeAsync({ $workoutId: biggestWorkoutId, $bodyPart: bodyPart });
   } catch (error) {
     console.error("Error inside addWorkout:", error);
