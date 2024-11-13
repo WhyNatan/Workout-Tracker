@@ -33,7 +33,7 @@ export const addEmptyExercise = async (db: SQLite.SQLiteDatabase, workoutId: num
   };
 
   var tempExercise: Exercise = {
-    exerciseId: 1,
+    exerciseId: biggestExerciseId,
     workoutId: workoutId,
     exercise: "",
     notes: "",
@@ -64,15 +64,37 @@ export const getExercises = async (db: SQLite.SQLiteDatabase): Promise<Exercise[
 };
 
 export const getExercisesOfWorkout = async (db: SQLite.SQLiteDatabase, workoutId: number): Promise<Exercise[]> => {
-    try {
-        const exercises: Exercise[] = await db.getAllAsync(`SELECT * FROM Exercises WHERE workoutId = ${workoutId}`);
-        // console.log("getExercisesOfWorkout, Exercises:", exercises);
-        return exercises;
-    } catch (error) {
-        console.error(error);
-        throw Error(`Failed to get Exercises of workoutId ${workoutId} from database`);
-    };
+  try {
+    const exercises: Exercise[] = await db.getAllAsync(`SELECT * FROM Exercises WHERE workoutId = ${workoutId}`);
+    // console.log("getExercisesOfWorkout, Exercises:", exercises);
+    return exercises;
+  } catch (error) {
+    console.error(error);
+    throw Error(`Failed to get Exercises of workoutId ${workoutId} from database`);
   };
+};
+
+export const updateExerciseOfWorkout = async (db: SQLite.SQLiteDatabase, exercise: Exercise) => {
+  var tempExercise: Exercise = {
+    exerciseId: exercise.exerciseId,
+    workoutId: exercise.workoutId,
+    exercise: exercise.exercise,
+    notes: exercise.notes,
+  };
+
+  const updateQuery = `
+    UPDATE Exercises 
+    SET exerciseId = ${tempExercise.exerciseId}, workoutId = ${tempExercise.workoutId}, exercise = '${tempExercise.exercise}', notes = '${tempExercise.notes}'
+    WHERE workoutId = ${tempExercise.workoutId};
+  `;
+  
+  try {
+    await db.runAsync(updateQuery);
+  } catch (error) {
+    console.error("Error inside updateExerciseOfWorkout:", error);
+    throw Error("Failed to update Exercise.");
+  };
+};
 
 // export const deleteWorkout = async (db: SQLite.SQLiteDatabase, workout: Workout) => {
 //   const deleteQuery = await db.prepareAsync(`

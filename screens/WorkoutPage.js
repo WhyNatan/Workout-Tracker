@@ -2,7 +2,7 @@ import '../gesture-handler';
 import '../BackEnd';
 import { BackEndManager} from '../BackEnd';
 import { addWorkout, getWorkouts, getWorkout } from '../db/workouts.tsx';
-import { addExercise, addEmptyExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
+import { addExercise, addEmptyExercise, getExercises, getExercisesOfWorkout, updateExerciseOfWorkout } from '../db/exercises.tsx';
 import { getSetsOfExercise } from '../db/sets.tsx';
 import { useCallback, useEffect, React, useState } from 'react';
 import { View, Text, Alert, TextInput, TouchableNativeFeedback, Button } from 'react-native';
@@ -13,6 +13,8 @@ import { useSQLiteContext } from 'expo-sqlite';
 
 // Keeping it global to ease the use of it in the submit function.
 var WorkoutId;
+
+var updatePage;
 
 async function getWorkoutBodyPart(db, workoutId) {
 
@@ -48,11 +50,25 @@ async function getWorkoutExercises(db, workoutId) {
     return (completeExercises);
 };
 
-async function prepareToAddEmptyExercise(db, workoutId, exercises) {
+async function prepareToAddEmptyExercise(db, workoutId) {
 
-    // await addExercise(db, workoutId);
-    console.log("getting exercises:", await getExercises(db));
+    await addEmptyExercise(db, workoutId);
+    await updatePage();
+    // console.log(`getting exercises from workoutId ${workoutId}:`, await getExercisesOfWorkout(db, workoutId));
     
+};
+
+async function updateExercise(db, exerciseId, workoutId, exercise, notes) {
+    // console.log(db, exerciseId, workoutId, exercise, notes);
+    var tempExercise= {
+        exerciseId: exerciseId,
+        workoutId: workoutId,
+        exercise: exercise,
+        notes: notes,
+    };
+
+    // console.log(exercise);
+    await updateExerciseOfWorkout(db, tempExercise);
 };
 
 export function WorkoutPage({ navigation, route }) {
@@ -71,6 +87,7 @@ export function WorkoutPage({ navigation, route }) {
             setWorkoutBodyPart(temp_workoutBodyPart);
             setWorkoutExercises(temp_workoutExercises);
         };
+        updatePage = setup;
         setup();
     }, []);
 
@@ -83,7 +100,7 @@ export function WorkoutPage({ navigation, route }) {
 
                 <ExercisesBlock exercises={workoutExercises}/>
 
-                <TouchableNativeFeedback onPress={()=>{prepareToAddEmptyExercise(db, workoutId, workoutExercises)}}>
+                <TouchableNativeFeedback onPress={()=>{prepareToAddEmptyExercise(db, workoutId)}}>
                     <View style={styles.addExerciseContainer}> 
                         <Text style={styles.addExercise}>
                             Add Exercise
@@ -116,10 +133,18 @@ function ExerciseBlock(props) {
 
     const exerciseId = props.exercise.exerciseId;
 
+    const db = useSQLiteContext();
+
+    async function prepareUpdateExerciseName(newExerciseName) {
+        // console.log("updating exercise name:", newExerciseName)
+        await setExerciseName(newExerciseName);
+        await updateExercise(db, exerciseId, WorkoutId, newExerciseName, exerciseNotes);
+    };
+
   return (
     <View style={[{marginBottom:40}]}>
         <View style={[styles.exerciseTitleContainer, styles.containerRow]}>
-            <TextInput style={styles.exerciseTitle} value={exerciseName} onChangeText={newExerciseName => setExerciseName(newExerciseName)}/>
+            <TextInput style={styles.exerciseTitle} value={exerciseName} onChangeText={newExerciseName => prepareUpdateExerciseName(newExerciseName)}/>
             <Text> </Text>
             <Icon name='edit' size={15}/>
         </View>
@@ -238,8 +263,4 @@ const AppBar = ({ navigation }) => {
             </View>
             <View style={[{ paddingBottom: 15 }]}></View>
         </View>);
-};
-
-function submitSet(workoutId, exerciseId, workoutSetNumber, newSetReps, newSetWeight) {
-    BackEndManager.saveWorkoutExerciseSet(workoutId, exerciseId, workoutSetNumber, newSetReps, newSetWeight);
 };
