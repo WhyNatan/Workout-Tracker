@@ -55,6 +55,26 @@ export const getWorkouts = async (db: SQLite.SQLiteDatabase): Promise<Workout[]>
   }
 };
 
+export const updateWorkoutBodyPart = async (db: SQLite.SQLiteDatabase, workout: Workout) => {
+  var tempWorkout: Workout = {
+    workoutId: workout.workoutId,
+    bodyPart: workout.bodyPart,
+  };
+
+  const updateQuery = `
+    UPDATE Workouts 
+    SET bodyPart = '${tempWorkout.bodyPart}'
+    WHERE workoutId = ${tempWorkout.workoutId};
+  `;
+  
+  try {
+    await db.runAsync(updateQuery);
+  } catch (error) {
+    console.error("Error inside updateWorkoutBodyPart:", error);
+    throw Error("Failed to update Workout.");
+  };
+};
+
 export const deleteWorkout = async (db: SQLite.SQLiteDatabase, workoutId: number) => {
   const deleteQuery = await db.prepareAsync(`
     DELETE FROM Workouts

@@ -84,7 +84,7 @@ export const updateExerciseOfWorkout = async (db: SQLite.SQLiteDatabase, exercis
 
   const updateQuery = `
     UPDATE Exercises 
-    SET exerciseId = ${tempExercise.exerciseId}, workoutId = ${tempExercise.workoutId}, exercise = '${tempExercise.exercise}', notes = '${tempExercise.notes}'
+    SET exerciseId = ${tempExercise.exerciseId}, exercise = '${tempExercise.exercise}', notes = '${tempExercise.notes}'
     WHERE workoutId = ${tempExercise.workoutId};
   `;
   

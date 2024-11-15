@@ -19,7 +19,7 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
 
     const exerciseQuery = `
         CREATE TABLE IF NOT EXISTS Exercises (
-        exerciseId INTEGER PRIMARY KEY AUTOINCREMENT,
+        exerciseId INTEGER,
         workoutId INTEGER,
         exercise TEXT,
         notes TEXT
@@ -28,7 +28,7 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
 
     const setQuery = `
         CREATE TABLE IF NOT EXISTS Sets (
-        setId INTEGER PRIMARY KEY AUTOINCREMENT,
+        setId INTEGER,
         exerciseId INTEGER,
         setOrder INTEGER,
         reps TEXT,
@@ -44,6 +44,7 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
         await db.execAsync(workoutQuery);
         await db.execAsync(exerciseQuery);
         await db.execAsync(setQuery);
+        // await db.execAsync('DROP TABLE Workouts; DROP TABLE Exercises; DROP TABLE Sets;')
     } catch (error) {
         console.error("Error inside createTables:", error);
         throw Error(`Failed to create tables`);

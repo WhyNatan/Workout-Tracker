@@ -1,7 +1,7 @@
 import '../gesture-handler';
 import '../BackEnd';
 import { BackEndManager} from '../BackEnd';
-import { addWorkout, getWorkouts, getWorkout } from '../db/workouts.tsx';
+import { addWorkout, getWorkouts, getWorkout, updateWorkoutBodyPart } from '../db/workouts.tsx';
 import { addExercise, addEmptyExercise, getExercises, getExercisesOfWorkout, updateExerciseOfWorkout } from '../db/exercises.tsx';
 import { getSetsOfExercise } from '../db/sets.tsx';
 import { useCallback, useEffect, React, useState } from 'react';
@@ -58,7 +58,7 @@ async function prepareToAddEmptyExercise(db, workoutId) {
     
 };
 
-async function updateExercise(db, exerciseId, workoutId, exercise, notes) {
+async function requestUpdateExercise(db, exerciseId, workoutId, exercise, notes) {
     // console.log(db, exerciseId, workoutId, exercise, notes);
     var tempExercise= {
         exerciseId: exerciseId,
@@ -69,6 +69,17 @@ async function updateExercise(db, exerciseId, workoutId, exercise, notes) {
 
     // console.log(exercise);
     await updateExerciseOfWorkout(db, tempExercise);
+};
+
+async function requestUpdateWorkout(db, workoutId, workoutBodyPart) {
+    // console.log(db, exerciseId, workoutId, exercise, notes);
+    var tempWorkout= {
+        workoutId: workoutId,
+        bodyPart: workoutBodyPart,
+    };
+
+    // console.log(exercise);
+    await updateWorkoutBodyPart(db, tempWorkout);
 };
 
 export function WorkoutPage({ navigation, route }) {
@@ -91,12 +102,18 @@ export function WorkoutPage({ navigation, route }) {
         setup();
     }, []);
 
+    async function prepareUpdateWorkoutBodyPart(newWorkoutBodyPart) {
+        // console.log("updating exercise name:", newExerciseName)
+        await setWorkoutBodyPart(newWorkoutBodyPart);
+        await requestUpdateWorkout(db, WorkoutId, newWorkoutBodyPart);
+    };
+
     return (
         <View style={[{flex:1}]}>
             <AppBar navigation={navigation}/>
 
             <ScrollView style={[{paddingLeft: 20, paddingTop: 10}]}>
-                <TextInput style={styles.exerciseBodyPart} value={workoutBodyPart}/>
+                <TextInput style={styles.exerciseBodyPart} value={workoutBodyPart} onChangeText={newWorkoutBodyPart => prepareUpdateWorkoutBodyPart(newWorkoutBodyPart)}/>
 
                 <ExercisesBlock exercises={workoutExercises}/>
 
@@ -130,15 +147,13 @@ function ExerciseBlock(props) {
     const [exerciseName, setExerciseName]   = useState(props.exercise.exercise);
     const [exerciseSets, setExerciseSets]   = useState(props.exercise.sets);
     const [exerciseNotes, setExerciseNotes] = useState(props.exercise.notes);
-
-    const exerciseId = props.exercise.exerciseId;
+    const [exerciseId, setExerciseId] = useState(props.exercise.exerciseId);
 
     const db = useSQLiteContext();
 
     async function prepareUpdateExerciseName(newExerciseName) {
-        // console.log("updating exercise name:", newExerciseName)
         await setExerciseName(newExerciseName);
-        await updateExercise(db, exerciseId, WorkoutId, newExerciseName, exerciseNotes);
+        await requestUpdateExercise(db, exerciseId, WorkoutId, newExerciseName, exerciseNotes);
     };
 
   return (
