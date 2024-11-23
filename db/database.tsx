@@ -30,6 +30,7 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
         CREATE TABLE IF NOT EXISTS Sets (
         setId INTEGER,
         exerciseId INTEGER,
+        workoutId INTEGER,
         setOrder INTEGER,
         reps TEXT,
         weight TEXT,

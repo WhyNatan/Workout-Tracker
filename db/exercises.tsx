@@ -7,6 +7,10 @@ type Exercise = {
     notes: string;
 };
 
+type MaxExerciseId = {
+  maxExerciseId: number;
+}
+
 export const addExercise = async (db: SQLite.SQLiteDatabase, exercise: Exercise) => {
   const insertQuery = await db.prepareAsync(`
     INSERT INTO Exercises (exerciseId, workoutId, exercise, notes)
@@ -24,9 +28,11 @@ export const addExercise = async (db: SQLite.SQLiteDatabase, exercise: Exercise)
 export const addEmptyExercise = async (db: SQLite.SQLiteDatabase, workoutId: number) => {
 
   try {
-    // Find the biggest workout Id and add 1 for an auto increment.
-    var biggestExerciseId:number = await db.getFirstAsync(`SELECT MAX(exerciseId) FROM Exercises WHERE workoutId = ${workoutId};`);
+    // Find the biggest workout Id, translate it into a number using a custom type and add 1 for an auto increment.
+    var getBiggestExerciseId:MaxExerciseId = await db.getFirstAsync(`SELECT MAX(exerciseId) AS maxExerciseId FROM Exercises WHERE workoutId = ${workoutId};`);
+    var biggestExerciseId:number = getBiggestExerciseId.maxExerciseId;
     biggestExerciseId++;
+
   } catch(error) {
     console.error("Error inside addEmptyExercise:", error);
     throw Error("Failed to find biggest ExerciseId.");
@@ -47,7 +53,7 @@ export const addEmptyExercise = async (db: SQLite.SQLiteDatabase, workoutId: num
   try {
     return await insertQuery.executeAsync({ $exerciseId: tempExercise.exerciseId, $workoutId: tempExercise.workoutId, $exercise: tempExercise.exercise, $notes: tempExercise.notes });
   } catch (error) {
-    console.error("Error inside addExercise:", error);
+    console.error("Error inside addEmptyExercise:", error);
     throw Error("Failed to add Exercise.");
   };
 };
@@ -96,16 +102,17 @@ export const updateExerciseOfWorkout = async (db: SQLite.SQLiteDatabase, exercis
   };
 };
 
-// export const deleteWorkout = async (db: SQLite.SQLiteDatabase, workout: Workout) => {
-//   const deleteQuery = await db.prepareAsync(`
-//     DELETE FROM Workouts
-//     WHERE id = $workoutId
-//   `);
+export const deleteExerciseOfWorkout = async (db: SQLite.SQLiteDatabase, exerciseId: number, workoutId: number) => {
+  const deleteQuery = await db.prepareAsync(`
+    DELETE FROM Exercises
+    WHERE exerciseId = $exerciseId
+    AND workoutId = $workoutId
+  `);
 
-//   try {
-//     return await deleteQuery.executeAsync({ $workoutId: workout.workoutId });
-//   } catch (error) {
-//     console.error("Error inside deleteWorkout:", error);
-//     throw Error("Failed to remove Workout.");
-//   };
-// };
+  try {
+    return await deleteQuery.executeAsync({ $exerciseId: exerciseId, $workoutId: workoutId });
+  } catch (error) {
+    console.error("Error inside deleteExerciseOfWorkout:", error);
+    throw Error("Failed to remove Exercise.");
+  };
+};

@@ -2,8 +2,8 @@ import '../gesture-handler';
 import '../BackEnd';
 import { BackEndManager} from '../BackEnd';
 import { addWorkout, getWorkouts, getWorkout, updateWorkoutBodyPart } from '../db/workouts.tsx';
-import { addExercise, addEmptyExercise, getExercises, getExercisesOfWorkout, updateExerciseOfWorkout } from '../db/exercises.tsx';
-import { getSetsOfExercise } from '../db/sets.tsx';
+import { addExercise, addEmptyExercise, getExercises, getExercisesOfWorkout, updateExerciseOfWorkout, deleteExerciseOfWorkout } from '../db/exercises.tsx';
+import { getSetsOfExerciseOfWorkout, addEmptySet } from '../db/sets.tsx';
 import { useCallback, useEffect, React, useState } from 'react';
 import { View, Text, Alert, TextInput, TouchableNativeFeedback, Button } from 'react-native';
 import { styles } from '../styles/styles';
@@ -39,7 +39,7 @@ async function getWorkoutExercises(db, workoutId) {
 
         // Getting the exercises of the workouts
         for (i = 0; i < exercises.length; i++) {
-            sets = await getSetsOfExercise(db, exercises[i].exerciseId);
+            sets = await getSetsOfExerciseOfWorkout(db, exercises[i].exerciseId, exercises[i].workoutId);
             
             completeExercises.push({exercise: exercises[i].exercise, exerciseId: exercises[i].exerciseId, sets: sets, notes: exercises[i].notes});
         };
@@ -53,9 +53,15 @@ async function getWorkoutExercises(db, workoutId) {
 async function prepareToAddEmptyExercise(db, workoutId) {
 
     await addEmptyExercise(db, workoutId);
-    await updatePage();
     // console.log(`getting exercises from workoutId ${workoutId}:`, await getExercisesOfWorkout(db, workoutId));
-    
+    await updatePage();
+};
+
+async function prepareToAddEmptySet(db, exerciseId, workoutId) {
+
+    await addEmptySet(db, exerciseId, workoutId);
+    // console.log(`getting sets from exerciseId ${exerciseId} and workoutId ${workoutId}:`, await getSetsOfExerciseOfWorkout(db, exerciseId, workoutId));
+    await updatePage();
 };
 
 async function requestUpdateExercise(db, exerciseId, workoutId, exercise, notes) {
@@ -80,6 +86,30 @@ async function requestUpdateWorkout(db, workoutId, workoutBodyPart) {
 
     // console.log(exercise);
     await updateWorkoutBodyPart(db, tempWorkout);
+};
+
+async function confirmDeleteExercise(db, exerciseId, workoutId) {
+
+    async function deleteConfirmedExercise() {
+        try {
+            console.log("deleting exercise:"+exerciseId);
+            await deleteExerciseOfWorkout(db, exerciseId, workoutId);
+            await updatePage();
+        } catch (e) {
+            console.error(e);
+        };
+    };
+
+    // Confirm if a delete was requested or not
+    Alert.alert(
+        '',
+        `Are you sure you want to delete this Exercise? ${exerciseId}`,  
+        [
+            {text: 'Yes', onPress: () => deleteConfirmedExercise(db, exerciseId, workoutId)},
+            {text: 'No', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        ],
+        { cancelable: false },
+    );
 };
 
 export function WorkoutPage({ navigation, route }) {
@@ -156,12 +186,18 @@ function ExerciseBlock(props) {
         await requestUpdateExercise(db, exerciseId, WorkoutId, newExerciseName, exerciseNotes);
     };
 
+    async function prepareUpdateExerciseNotes(newExerciseNotes) {
+        await setExerciseNotes(newExerciseNotes);
+        await requestUpdateExercise(db, exerciseId, WorkoutId, exerciseName, newExerciseNotes);
+    };
+
   return (
     <View style={[{marginBottom:40}]}>
         <View style={[styles.exerciseTitleContainer, styles.containerRow]}>
             <TextInput style={styles.exerciseTitle} value={exerciseName} onChangeText={newExerciseName => prepareUpdateExerciseName(newExerciseName)}/>
             <Text> </Text>
             <Icon name='edit' size={15}/>
+            <Icon name='delete' iconStyle={{}} size={20} onPress={() => confirmDeleteExercise(db, exerciseId, WorkoutId)}/>
         </View>
 
         {/* Caption line */}
@@ -190,7 +226,7 @@ function ExerciseBlock(props) {
         <SetsView sets={exerciseSets} exerciseId={exerciseId}/>
 
         <View style={styles.exerciseAddContainer}>
-            <Text style={styles.exerciseAdd} onPress={() => Alert.alert("Add Set")}>Add Set</Text>
+            <Text style={styles.exerciseAdd} onPress={() => prepareToAddEmptySet(db, exerciseId, WorkoutId,)}>Add Set</Text>
         </View>
 
         <View style={styles.exerciseFooterContainer}>
@@ -201,7 +237,7 @@ function ExerciseBlock(props) {
             <TextInput 
                 style={[styles.exerciseNotes, styles.multilineText]}
                 value={exerciseNotes}
-                onChangeText={newExerciseNotes => setExerciseNotes(newExerciseNotes)}
+                onChangeText={newExerciseNotes => prepareUpdateExerciseNotes(newExerciseNotes)}
                 placeholder="Write notes here."
                 multiline
             />
