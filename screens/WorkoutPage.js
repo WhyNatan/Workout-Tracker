@@ -3,7 +3,7 @@ import '../BackEnd';
 import { BackEndManager} from '../BackEnd';
 import { addWorkout, getWorkouts, getWorkout, updateWorkoutBodyPart } from '../db/workouts.tsx';
 import { addExercise, addEmptyExercise, getExercises, getExercisesOfWorkout, updateExerciseOfWorkout, deleteExerciseOfWorkout } from '../db/exercises.tsx';
-import { getSetsOfExerciseOfWorkout, addEmptySet } from '../db/sets.tsx';
+import { getSetsOfExerciseOfWorkout, addEmptySet, deleteSetOfExercise, updateSetOfExercise } from '../db/sets.tsx';
 import { useCallback, useEffect, React, useState } from 'react';
 import { View, Text, Alert, TextInput, TouchableNativeFeedback, Button } from 'react-native';
 import { styles } from '../styles/styles';
@@ -65,7 +65,6 @@ async function prepareToAddEmptySet(db, exerciseId, workoutId) {
 };
 
 async function requestUpdateExercise(db, exerciseId, workoutId, exercise, notes) {
-    // console.log(db, exerciseId, workoutId, exercise, notes);
     var tempExercise= {
         exerciseId: exerciseId,
         workoutId: workoutId,
@@ -73,24 +72,39 @@ async function requestUpdateExercise(db, exerciseId, workoutId, exercise, notes)
         notes: notes,
     };
 
-    // console.log(exercise);
     await updateExerciseOfWorkout(db, tempExercise);
 };
 
 async function requestUpdateWorkout(db, workoutId, workoutBodyPart) {
-    // console.log(db, exerciseId, workoutId, exercise, notes);
     var tempWorkout= {
         workoutId: workoutId,
         bodyPart: workoutBodyPart,
     };
 
-    // console.log(exercise);
     await updateWorkoutBodyPart(db, tempWorkout);
+};
+
+async function requestUpdateSetOfExercise(db, setId, exerciseId, workoutId, setReps, setWeight) {
+    var tempSet= {
+        setId: setId,
+        exerciseId: exerciseId,
+        workoutId: workoutId,
+        setOrder: setId,
+        reps: setReps,
+        weight: setWeight,
+        bestSetReps: setReps,
+        bestSetWeight: setWeight,
+    };
+
+    await updateSetOfExercise(db, tempSet);
+    await updatePage();
+
+    return true;
 };
 
 async function confirmDeleteExercise(db, exerciseId, workoutId) {
 
-    async function deleteConfirmedExercise() {
+    async function deleteConfirmedExercise(db, exerciseId, workoutId) {
         try {
             console.log("deleting exercise:"+exerciseId);
             await deleteExerciseOfWorkout(db, exerciseId, workoutId);
@@ -103,7 +117,7 @@ async function confirmDeleteExercise(db, exerciseId, workoutId) {
     // Confirm if a delete was requested or not
     Alert.alert(
         '',
-        `Are you sure you want to delete this Exercise? ${exerciseId}`,  
+        `Are you sure you want to delete this Exercise?`,  
         [
             {text: 'Yes', onPress: () => deleteConfirmedExercise(db, exerciseId, workoutId)},
             {text: 'No', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
@@ -112,9 +126,34 @@ async function confirmDeleteExercise(db, exerciseId, workoutId) {
     );
 };
 
+async function confirmDeleteSet(db, setId, exerciseId, workoutId) {
+    async function deleteConfirmedSet(db, setId, exerciseId, workoutId) {
+        try {
+            console.log("deleting set:"+setId);
+            await deleteSetOfExercise(db, setId, exerciseId, workoutId);
+            await updatePage();
+        } catch (e) {
+            console.error(e);
+        };
+    };
+
+    // Confirm if a delete was requested or not
+    Alert.alert(
+        '',
+        `Are you sure you want to delete this Set?`,  
+        [
+            {text: 'Yes', onPress: () => deleteConfirmedSet(db, setId, exerciseId, workoutId)},
+            {text: 'No', onPress: () => console.log('Cancel Pressed'), style: 'cancel'},
+        ],
+        { cancelable: false },
+    );
+};
+
 export function WorkoutPage({ navigation, route }) {
     var workoutId = route.params;
-    
+
+    // console.log("----------------------- Render Of WorkoutPage --------------------------");
+
     WorkoutId = workoutId;
 
     const db = useSQLiteContext();
@@ -160,10 +199,9 @@ export function WorkoutPage({ navigation, route }) {
     );
 };
 
-function ExercisesBlock(exercises) {
+function ExercisesBlock(props) {
     
-    // Weird adaptation because the "exercises" from the prop is encapsulating the actual "exercises" variable.
-    var workoutExercises = exercises.exercises;
+    var workoutExercises = props.exercises;
     var exerciseBlocks = [];
 
     for (i = 0; i < workoutExercises.length; i++) {
@@ -175,9 +213,10 @@ function ExercisesBlock(exercises) {
 
 function ExerciseBlock(props) {
     const [exerciseName, setExerciseName]   = useState(props.exercise.exercise);
-    const [exerciseSets, setExerciseSets]   = useState(props.exercise.sets);
     const [exerciseNotes, setExerciseNotes] = useState(props.exercise.notes);
-    const [exerciseId, setExerciseId] = useState(props.exercise.exerciseId);
+
+    var exerciseSets = props.exercise.sets;
+    var exerciseId = props.exercise.exerciseId;
 
     const db = useSQLiteContext();
 
@@ -190,7 +229,7 @@ function ExerciseBlock(props) {
         await setExerciseNotes(newExerciseNotes);
         await requestUpdateExercise(db, exerciseId, WorkoutId, exerciseName, newExerciseNotes);
     };
-
+    
   return (
     <View style={[{marginBottom:40}]}>
         <View style={[styles.exerciseTitleContainer, styles.containerRow]}>
@@ -202,6 +241,7 @@ function ExerciseBlock(props) {
 
         {/* Caption line */}
         <View style={[styles.exerciseCaptionContainer, styles.containerRow]}>
+
             <GridCell width={3}> 
                 <Text style={styles.exerciseCaption}>Set</Text> 
             </GridCell>
@@ -222,12 +262,13 @@ function ExerciseBlock(props) {
             </GridCell>
         </View>
 
-        {/* <SetsView sets={exerciseSets}/> */}
         <SetsView sets={exerciseSets} exerciseId={exerciseId}/>
 
-        <View style={styles.exerciseAddContainer}>
-            <Text style={styles.exerciseAdd} onPress={() => prepareToAddEmptySet(db, exerciseId, WorkoutId,)}>Add Set</Text>
-        </View>
+        <TouchableNativeFeedback onPress={() => prepareToAddEmptySet(db, exerciseId, WorkoutId,)}>
+            <View style={styles.exerciseAddContainer}>
+                <Text style={styles.exerciseAdd}>Add Set</Text>
+            </View>
+        </TouchableNativeFeedback>
 
         <View style={styles.exerciseFooterContainer}>
             <View style={styles.containerRow}>
@@ -246,27 +287,44 @@ function ExerciseBlock(props) {
   ); 
 };
 
-// function SetsView(sets){
-// function SetsView(sets, currentExerciseId) {
 function SetsView(props) {
 
     var exerciseId = props.exerciseId;
-    // var workoutSets = sets.sets;
     var workoutSets = props.sets;
     var setRows = [];
 
     for (i = 0; i < workoutSets.length; i++) {
-        const setNumber = workoutSets[i].setNumber;
-        const [setReps, setSetReps]     = useState("");
-        const [setWeight, setSetWeight] = useState("");
+        setRows.push(<SetView workoutSet={workoutSets[i]} exerciseId = {exerciseId} key={i}/>);
+    };
 
-        setRows.push(
+    return (setRows);
+};
+
+function SetView(props) {
+    const exerciseId = props.exerciseId;
+    const workoutSet = props.workoutSet;
+    const setId = workoutSet.setId;
+    const [setReps, setSetReps]     = useState(workoutSet.setReps);
+    const [setWeight, setSetWeight] = useState(workoutSet.setWeight);
+
+    const db = useSQLiteContext();
+
+    async function prepareUpdateExerciseSet(setReps, setWeight) {
+        var setWasUpdated = await requestUpdateSetOfExercise(db, setId, exerciseId, WorkoutId, setReps, setWeight);
+        if (setWasUpdated) {
+            setSetReps("");
+            setSetWeight("");
+        };
+    };
+
+    return(
+        <TouchableNativeFeedback onLongPress={() => confirmDeleteSet(db, setId, exerciseId, WorkoutId)}>
             <View style={[styles.exerciseLineContainer, styles.containerRow]} key={i}>
                 <GridCell width={3}> 
-                    <Text style={styles.exerciseLine}>{workoutSets[i].setNumber}</Text> 
+                    <Text style={styles.exerciseLine}>{workoutSet.setOrder}</Text> 
                 </GridCell>
                 <GridCell width={8}> 
-                    <Text style={styles.exerciseLine}>{workoutSets[i].reps} x {workoutSets[i].weight}</Text> 
+                    <Text style={styles.exerciseLine}>{workoutSet.reps} x {workoutSet.weight}</Text> 
                 </GridCell>
                 <GridCell width={5}> 
                     <TextInput style={styles.exerciseLineEditable} value={setReps} onChangeText={newSetReps => setSetReps(newSetReps)}/> 
@@ -275,16 +333,14 @@ function SetsView(props) {
                     <TextInput style={styles.exerciseLineEditable} value={setWeight} onChangeText={newSetWeight => setSetWeight(newSetWeight)}/> 
                 </GridCell>
                 <GridCell width={9}> 
-                    <Text style={styles.exerciseLine}>{workoutSets[i].bestSetReps} x {workoutSets[i].bestSetWeight}</Text> 
+                    <Text style={styles.exerciseLine}>{workoutSet.bestSetReps} x {workoutSet.bestSetWeight}</Text> 
                 </GridCell>
                 <GridCell width={2}> 
-                    <Icon name='check' size={20} onPress={()=>{submitSet(WorkoutId, exerciseId, setNumber, setReps, setWeight)}}/>
+                    <Icon name='check' size={20} onPress={()=>{prepareUpdateExerciseSet(setReps, setWeight)}}/>
                 </GridCell>
             </View>
-        );
-    };
-
-    return (setRows);
+        </TouchableNativeFeedback>
+    );
 };
 
 const GridCell = ({width, children}) => {

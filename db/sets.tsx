@@ -11,6 +11,10 @@ type Set = {
     bestSetWeight: string;
 };
 
+type MaxSetId = {
+  maxSetId: number;
+}
+
 export const addSet = async (db: SQLite.SQLiteDatabase, set: Set) => {
   const insertQuery = await db.prepareAsync(`
     INSERT INTO Sets (setId, exerciseId, workoutId, setOrder, reps, weight, bestSetReps, bestSetWeight)
@@ -39,7 +43,8 @@ export const addEmptySet = async (db: SQLite.SQLiteDatabase, exerciseId: number,
 
   try {
     // Find the biggest workout Id and add 1 for an auto increment.
-    var biggestSetId:number = await db.getFirstAsync(`SELECT MAX(setId) FROM Sets WHERE exerciseId = ${exerciseId} AND workoutId = ${workoutId};`);
+    var getBiggestSetId:MaxSetId = await db.getFirstAsync(`SELECT MAX(setId) AS maxSetId FROM Sets WHERE exerciseId = ${exerciseId} AND workoutId = ${workoutId};`);
+    var biggestSetId:number = getBiggestSetId.maxSetId;
     biggestSetId++;
   } catch(error) {
     console.error("Error inside addEmptySet:", error);
@@ -67,5 +72,47 @@ export const addEmptySet = async (db: SQLite.SQLiteDatabase, exerciseId: number,
   } catch (error) {
     console.error("Error inside addEmptySet:", error);
     throw Error("Failed to add Set.");
+  };
+};
+
+export const updateSetOfExercise = async (db: SQLite.SQLiteDatabase, set: Set) => {
+  var tempSet= {
+    setId: set.setId,
+    exerciseId: set.exerciseId,
+    workoutId: set.workoutId,
+    setOrder: set.setId,
+    reps: set.reps,
+    weight: set.weight,
+    bestSetReps: set.bestSetReps,
+    bestSetWeight: set.bestSetWeight,
+};
+
+  const updateQuery = `
+    UPDATE Sets 
+    SET setOrder = '${tempSet.setOrder}', reps = '${tempSet.reps}', weight = '${tempSet.weight}', bestSetReps = '${tempSet.bestSetReps}', bestSetWeight = '${tempSet.bestSetWeight}'
+    WHERE setId = ${tempSet.setId} AND exerciseId = ${tempSet.exerciseId} AND workoutId = ${tempSet.workoutId};
+  `;
+  
+  try {
+    await db.runAsync(updateQuery);
+  } catch (error) {
+    console.error("Error inside updateExerciseOfWorkout:", error);
+    throw Error("Failed to update Exercise.");
+  };
+};
+
+export const deleteSetOfExercise = async (db: SQLite.SQLiteDatabase, setId:number, exerciseId: number, workoutId: number) => {
+  const deleteQuery = await db.prepareAsync(`
+    DELETE FROM Sets
+    WHERE setId = $setId
+    AND exerciseId = $exerciseId
+    AND workoutId = $workoutId
+  `);
+
+  try {
+    return await deleteQuery.executeAsync({ $setId: setId, $exerciseId: exerciseId, $workoutId: workoutId });
+  } catch (error) {
+    console.error("Error inside deleteSetOfExercise:", error);
+    throw Error("Failed to remove Set.");
   };
 };
