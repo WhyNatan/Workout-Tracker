@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import { deleteAllExercisesOfWorkout } from './exercises';
 
 type Workout = {
     workoutId: number;
@@ -82,6 +83,8 @@ export const deleteWorkout = async (db: SQLite.SQLiteDatabase, workoutId: number
   `);
 
   try {
+    // Will attempt to delete the exercises under the workout ID.
+    await deleteAllExercisesOfWorkout(db, workoutId);
     return await deleteQuery.executeAsync({ $workoutId: workoutId });
   } catch (error) {
     console.error("Error inside deleteWorkout:", error);

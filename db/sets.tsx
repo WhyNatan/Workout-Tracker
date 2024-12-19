@@ -116,3 +116,32 @@ export const deleteSetOfExercise = async (db: SQLite.SQLiteDatabase, setId:numbe
     throw Error("Failed to remove Set.");
   };
 };
+
+export const deleteAllSetsOfExercise = async (db: SQLite.SQLiteDatabase, exerciseId: number, workoutId: number) => {
+  const deleteQuery = await db.prepareAsync(`
+    DELETE FROM Sets
+    WHERE exerciseId = $exerciseId
+    AND workoutId = $workoutId
+  `);
+
+  try {
+    return await deleteQuery.executeAsync({ $exerciseId: exerciseId, $workoutId: workoutId });
+  } catch (error) {
+    console.error("Error inside deleteAllSetsOfExercise:", error);
+    throw Error("Failed to remove Sets.");
+  };
+};
+
+export const deleteAllSetsOfWorkout = async (db: SQLite.SQLiteDatabase, workoutId: number) => {
+  const deleteQuery = await db.prepareAsync(`
+    DELETE FROM Sets
+    WHERE workoutId = $workoutId
+  `);
+
+  try {
+    return await deleteQuery.executeAsync({ $workoutId: workoutId });
+  } catch (error) {
+    console.error("Error inside deleteAllSetsOfWorkout:", error);
+    throw Error("Failed to remove Sets.");
+  };
+};

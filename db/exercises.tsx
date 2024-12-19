@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import { deleteAllSetsOfExercise, deleteAllSetsOfWorkout } from './sets';
 
 type Exercise = {
     exerciseId: number;
@@ -44,6 +45,8 @@ export const addEmptyExercise = async (db: SQLite.SQLiteDatabase, workoutId: num
     exercise: "",
     notes: "",
   };
+
+  console.log("adding exercise:", tempExercise);
 
   const insertQuery = await db.prepareAsync(`
     INSERT INTO Exercises (exerciseId, workoutId, exercise, notes)
@@ -91,7 +94,8 @@ export const updateExerciseOfWorkout = async (db: SQLite.SQLiteDatabase, exercis
   const updateQuery = `
     UPDATE Exercises 
     SET exerciseId = ${tempExercise.exerciseId}, exercise = '${tempExercise.exercise}', notes = '${tempExercise.notes}'
-    WHERE workoutId = ${tempExercise.workoutId};
+    WHERE workoutId = ${tempExercise.workoutId} 
+    AND exerciseId = ${tempExercise.exerciseId};
   `;
   
   try {
@@ -110,9 +114,27 @@ export const deleteExerciseOfWorkout = async (db: SQLite.SQLiteDatabase, exercis
   `);
 
   try {
+    // Will attempt to delete the sets under the exercise ID.
+    await deleteAllSetsOfExercise(db, exerciseId, workoutId);
     return await deleteQuery.executeAsync({ $exerciseId: exerciseId, $workoutId: workoutId });
   } catch (error) {
     console.error("Error inside deleteExerciseOfWorkout:", error);
     throw Error("Failed to remove Exercise.");
+  };
+};
+
+export const deleteAllExercisesOfWorkout = async (db: SQLite.SQLiteDatabase, workoutId: number) => {
+  const deleteQuery = await db.prepareAsync(`
+    DELETE FROM Exercises
+    WHERE workoutId = $workoutId
+  `);
+
+  try {
+    // Will attempt to delete the sets under the workout ID.
+    await deleteAllSetsOfWorkout(db, workoutId);
+    return await deleteQuery.executeAsync({ $workoutId: workoutId });
+  } catch (error) {
+    console.error("Error inside deleteAllExercisesOfWorkout:", error);
+    throw Error("Failed to remove Exercises.");
   };
 };

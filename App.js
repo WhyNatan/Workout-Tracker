@@ -1,5 +1,4 @@
 import './gesture-handler';
-// import { connectToDatabase, createTables } from './db/db.ts';
 import { connectToDatabase, createTables } from './db/database.tsx';
 import { NavigationContainer } from '@react-navigation/native';
 import { HomePage } from './screens/HomePage';
@@ -63,10 +62,6 @@ function Fallback() {
     </View>
   );
 };
-
-// async function migrateDbIfNeeded(db) {
-//   await createTables(db);
-// };
 
 async function runCreateTables(db) {
   // console.log("Inside runCreateTables.");

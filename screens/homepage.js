@@ -2,14 +2,14 @@ import '../gesture-handler';
 import { connectToDatabase, createTables } from '../db/database.tsx';
 import { getWorkoutBiggestId, addWorkout, getWorkouts, deleteWorkout } from '../db/workouts.tsx';
 import { addExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
-import { BackEndManager } from '../BackEnd';
 import { Text, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighlight, TouchableNativeFeedback } from 'react-native';
 import { useCallback, useEffect, useState } from 'react';
 import { styles } from '../styles/styles';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useIsFocused } from '@react-navigation/stack';
 
 // Will get overwritten with a function to refresh the workouts variable that is used to display the info on screen.
-var updateWorkouts;
+var updatePage;
 
 async function getBackEnd(db) {
     
@@ -22,7 +22,7 @@ async function getBackEnd(db) {
     try {
         workouts = await getWorkouts(db);
 
-        // console.log("workouts var:", workouts);
+        console.log("workouts var:", workouts);
 
         // Getting the exercises of the workouts
         for (i = 0; i < workouts.length; i++) {
@@ -31,7 +31,7 @@ async function getBackEnd(db) {
             completeWorkouts.push({bodyPart: workouts[i].bodyPart, workoutId: workouts[i].workoutId, exercises: exercises});
         };
     } catch (e) {
-        console.error(e);
+        console.error("Error inside getBackEnd:", e);
     };
 
     // console.log("GetBackEnd: ", completeWorkouts);]\
@@ -45,7 +45,7 @@ async function addWorkoutButton(db) {
     await addWorkout(db, `New Workout ${(workoutBiggestId.workoutId + 1)}`);
 
     checkAllWorkouts(db);
-    await updateWorkouts();
+    await updatePage();
 };
 
 async function checkAllWorkouts(db) {
@@ -59,7 +59,7 @@ async function confirmDeleteWorkout(db, workoutId,) {
         try {
             console.log("deleting workout:"+workoutId);
             await deleteWorkout(db, workoutId);
-            await updateWorkouts();
+            await updatePage();
         } catch (e) {
             console.error(e);
         };
@@ -83,13 +83,22 @@ export function HomePage({ navigation }) {
 
     useEffect(() => {
         async function setup() {
+            console.log("Running Setup, workouts: ", workouts);
             var temp_workouts = await getBackEnd(db);
-            setWorkouts(temp_workouts);
+            await setWorkouts(temp_workouts);
+            console.log("After running Setup: ", JSON.stringify(temp_workouts));
         };
-        updateWorkouts = setup;
+        updatePage = setup;
         setup();
+
+        // This will auto update the page once the "goBack" function of navigation on another page is called.
+        const unsubscribe = navigation.addListener('focus', () => {
+            updatePage();
+        });
     }, []);
-    // }, [workouts]);
+    // }, [navigation]);
+
+    console.log("----- Rendering HomePage -----");
 
     return (
         <View style={{flex:1}}>
@@ -98,6 +107,8 @@ export function HomePage({ navigation }) {
             <ScrollView style={{flex:1}}>
 
                 <Workouts navigation={navigation} workouts={workouts}/>
+
+                {/* <Button onPress={() => {updatePage(); console.log("All workouts:", JSON.stringify(workouts))}} title='slay'/> */}
 
             </ScrollView>
         </View> 

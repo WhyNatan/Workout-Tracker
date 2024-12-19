@@ -1,6 +1,4 @@
 import '../gesture-handler';
-import '../BackEnd';
-import { BackEndManager} from '../BackEnd';
 import { addWorkout, getWorkouts, getWorkout, updateWorkoutBodyPart } from '../db/workouts.tsx';
 import { addExercise, addEmptyExercise, getExercises, getExercisesOfWorkout, updateExerciseOfWorkout, deleteExerciseOfWorkout } from '../db/exercises.tsx';
 import { getSetsOfExerciseOfWorkout, addEmptySet, deleteSetOfExercise, updateSetOfExercise } from '../db/sets.tsx';
