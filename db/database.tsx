@@ -1,5 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
+var DbIsReady = false;
+
 export async function connectToDatabase() {
     const db = await SQLite.openDatabaseAsync("Workout-Tracker", {
         useNewConnection: true
@@ -46,9 +48,14 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
         await db.execAsync(exerciseQuery);
         await db.execAsync(setQuery);
         // await db.execAsync('DROP TABLE Workouts; DROP TABLE Exercises; DROP TABLE Sets;')
+        DbIsReady = true;
     } catch (error) {
         console.error("Error inside createTables:", error);
         throw Error(`Failed to create tables`);
     };
 
+};
+
+export function isDbReady() {
+    return DbIsReady;
 };

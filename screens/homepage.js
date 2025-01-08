@@ -1,5 +1,5 @@
 import '../gesture-handler';
-import { connectToDatabase, createTables } from '../db/database.tsx';
+import { connectToDatabase, createTables, isDbReady } from '../db/database.tsx';
 import { getWorkoutBiggestId, addWorkout, getWorkouts, deleteWorkout } from '../db/workouts.tsx';
 import { addExercise, getExercises, getExercisesOfWorkout } from '../db/exercises.tsx';
 import { Text, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighlight, TouchableNativeFeedback } from 'react-native';
@@ -18,17 +18,32 @@ async function getBackEnd(db) {
     var completeWorkouts = [];
     var workouts = [];
     var exercises = [];
+    var workoutExercises = [];
 
     try {
+
+        if (!isDbReady()) { 
+            console.log("db is not ready yet.");
+            return;
+        };
+
         workouts = await getWorkouts(db);
+        exercises = await getExercises(db);
 
-        console.log("workouts var:", workouts);
+        // console.log("workouts var:", workouts);
 
-        // Getting the exercises of the workouts
+        // Adding the exercises of the workouts
         for (i = 0; i < workouts.length; i++) {
-            exercises = await getExercisesOfWorkout(db, workouts[i].workoutId);
+            // exercises = await getExercisesOfWorkout(db, workouts[i].workoutId);
             
-            completeWorkouts.push({bodyPart: workouts[i].bodyPart, workoutId: workouts[i].workoutId, exercises: exercises});
+            workoutExercises = [];
+            for (j = 0; j < exercises.length; j++) {
+                if (exercises[j].workoutId == workouts[i].workoutId) {
+                    workoutExercises.push(exercises[j])
+                }
+            };
+
+            completeWorkouts.push({bodyPart: workouts[i].bodyPart, workoutId: workouts[i].workoutId, exercises: workoutExercises});
         };
     } catch (e) {
         console.error("Error inside getBackEnd:", e);
