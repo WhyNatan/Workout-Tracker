@@ -83,17 +83,38 @@ export const updateSetOfExercise = async (db: SQLite.SQLiteDatabase, set: Set) =
     setOrder: set.setId,
     reps: set.reps,
     weight: set.weight,
-    bestSetReps: set.bestSetReps,
-    bestSetWeight: set.bestSetWeight,
+    bestSetReps: "0",
+    bestSetWeight: "0",
 };
-
-  const updateQuery = `
-    UPDATE Sets 
-    SET setOrder = '${tempSet.setOrder}', reps = '${tempSet.reps}', weight = '${tempSet.weight}', bestSetReps = '${tempSet.bestSetReps}', bestSetWeight = '${tempSet.bestSetWeight}'
-    WHERE setId = ${tempSet.setId} AND exerciseId = ${tempSet.exerciseId} AND workoutId = ${tempSet.workoutId};
-  `;
   
   try {
+    const tempOrigSet: Set = await db.getFirstAsync(`SELECT * FROM Sets WHERE setId = ${tempSet.setId} AND exerciseId = ${tempSet.exerciseId} AND workoutId = ${tempSet.workoutId}`);
+
+    // Check which weights are higher, the new ones or the old ones.
+    // If the weight is bigger, substitute the weight and reps variable.
+    if (tempSet.weight > tempOrigSet.bestSetWeight) {
+      tempSet.bestSetWeight = tempSet.weight;
+      tempSet.bestSetReps = tempSet.reps;
+    } else {
+      tempSet.bestSetWeight = tempOrigSet.bestSetWeight;
+
+      // If it is the same weight, check to see if reps increased.
+      if (tempSet.weight == tempOrigSet.bestSetWeight) {
+        // If it did increase, update the value in the bestSet.
+        if (tempSet.reps > tempOrigSet.bestSetReps) {
+          tempSet.bestSetReps = tempSet.reps;
+        } else {
+          tempSet.bestSetReps = tempOrigSet.bestSetReps;
+        };
+      };
+    };
+
+    const updateQuery = `
+      UPDATE Sets 
+      SET setOrder = '${tempSet.setOrder}', reps = '${tempSet.reps}', weight = '${tempSet.weight}', bestSetReps = '${tempSet.bestSetReps}', bestSetWeight = '${tempSet.bestSetWeight}'
+      WHERE setId = ${tempSet.setId} AND exerciseId = ${tempSet.exerciseId} AND workoutId = ${tempSet.workoutId};
+    `;
+
     await db.runAsync(updateQuery);
   } catch (error) {
     console.error("Error inside updateExerciseOfWorkout:", error);
