@@ -26,8 +26,6 @@ async function getWorkoutBodyPart(db, workoutId) {
 };
 
 async function getWorkoutExercises(db, workoutId) {
-    
-    // console.log("inside getBackEnd");
 
     var completeExercises = [];
     var exercises = [];
@@ -51,14 +49,12 @@ async function getWorkoutExercises(db, workoutId) {
 async function prepareToAddEmptyExercise(db, workoutId) {
 
     await addEmptyExercise(db, workoutId);
-    // console.log(`getting exercises from workoutId ${workoutId}:`, await getExercisesOfWorkout(db, workoutId));
     await updatePage();
 };
 
 async function prepareToAddEmptySet(db, exerciseId, workoutId) {
 
     await addEmptySet(db, exerciseId, workoutId);
-    // console.log(`getting sets from exerciseId ${exerciseId} and workoutId ${workoutId}:`, await getSetsOfExerciseOfWorkout(db, exerciseId, workoutId));
     await updatePage();
 };
 
@@ -150,8 +146,6 @@ async function confirmDeleteSet(db, setId, exerciseId, workoutId) {
 export function WorkoutPage({ navigation, route }) {
     var workoutId = route.params;
 
-    // console.log("----------------------- Render Of WorkoutPage --------------------------");
-
     WorkoutId = workoutId;
 
     const db = useSQLiteContext();
@@ -170,7 +164,6 @@ export function WorkoutPage({ navigation, route }) {
     }, []);
 
     async function prepareUpdateWorkoutBodyPart(newWorkoutBodyPart) {
-        // console.log("updating exercise name:", newExerciseName)
         await setWorkoutBodyPart(newWorkoutBodyPart);
         await requestUpdateWorkout(db, WorkoutId, newWorkoutBodyPart);
     };
@@ -363,7 +356,6 @@ const AppBar = ({ navigation }) => {
                     </View>
                 </TouchableNativeFeedback>
                 <View style={[{ flex: 1 }]}>
-                    {/* <Text style={styles.appbarTitle}>Workout Tracker</Text> */}
                 </View>
             </View>
             <View style={[{ paddingBottom: 15 }]}></View>

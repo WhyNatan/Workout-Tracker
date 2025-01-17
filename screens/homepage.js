@@ -6,14 +6,11 @@ import { Text, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighl
 import { useCallback, useEffect, useState } from 'react';
 import { styles } from '../styles/styles';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useIsFocused } from '@react-navigation/stack';
 
 // Will get overwritten with a function to refresh the workouts variable that is used to display the info on screen.
 var updatePage;
 
 async function getBackEnd(db) {
-    
-    // console.log("inside getBackEnd");
 
     var completeWorkouts = [];
     var workouts = [];
@@ -30,12 +27,9 @@ async function getBackEnd(db) {
         workouts = await getWorkouts(db);
         exercises = await getExercises(db);
 
-        // console.log("workouts var:", workouts);
-
         // Adding the exercises of the workouts
         for (i = 0; i < workouts.length; i++) {
-            // exercises = await getExercisesOfWorkout(db, workouts[i].workoutId);
-            
+
             workoutExercises = [];
             for (j = 0; j < exercises.length; j++) {
                 if (exercises[j].workoutId == workouts[i].workoutId) {
@@ -48,8 +42,6 @@ async function getBackEnd(db) {
     } catch (e) {
         console.error("Error inside getBackEnd:", e);
     };
-
-    // console.log("GetBackEnd: ", completeWorkouts);]\
 
     return (completeWorkouts);
 };
@@ -111,7 +103,6 @@ export function HomePage({ navigation }) {
             updatePage();
         });
     }, []);
-    // }, [navigation]);
 
     console.log("----- Rendering HomePage -----");
 
@@ -122,8 +113,6 @@ export function HomePage({ navigation }) {
             <ScrollView style={{flex:1}}>
 
                 <Workouts navigation={navigation} workouts={workouts}/>
-
-                {/* <Button onPress={() => {updatePage(); console.log("All workouts:", JSON.stringify(workouts))}} title='slay'/> */}
 
             </ScrollView>
         </View> 
@@ -143,7 +132,6 @@ const AppBar = () => {
                     <Text style={styles.appbarTitle}>Workout Tracker</Text>
                 </View>
                 <View style={[{ paddingRight: 20 }]}>
-                    {/* <Text onPress={() => Alert.alert('--Add Workout--')}>+ Add Workout</Text> */}
                     <Text onPress={() => addWorkoutButton(db)}>+ Add Workout</Text>
                 </View>
             </View>

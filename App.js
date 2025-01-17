@@ -44,9 +44,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Suspense fallback={<Fallback />}>
-        {/* <SQLiteProvider databaseName='workout-tracker' onInit={console.log("sqliteprovider initiated")} useSuspense> */}
         <SQLiteProvider databaseName='workout-tracker' onInit={runCreateTables} useSuspense>
-        {/* <SQLiteProvider databaseName='workout-tracker' onInit={loadData}> */}
           <MyStack/>
         </SQLiteProvider>
       </Suspense>
@@ -57,14 +55,11 @@ export default function App() {
 function Fallback() {
   return(
     <View>
-      {/* <Icon name="loading" /> */}
-      <Text>AAAAA</Text>
+      <Text>Fall Back while Loading</Text>
     </View>
   );
 };
 
 async function runCreateTables(db) {
-  // console.log("Inside runCreateTables.");
   await createTables(db);
-  // console.log("Inside runCreateTables, tables created.");
 };

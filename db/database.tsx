@@ -41,19 +41,16 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
         )
     `;
 
-    // `execAsync()` is useful for bulk queries when you want to execute altogether.
-    // Please note that `execAsync()` does not escape parameters and may lead to SQL injection.
     try {
         await db.execAsync(workoutQuery);
         await db.execAsync(exerciseQuery);
         await db.execAsync(setQuery);
-        // await db.execAsync('DROP TABLE Workouts; DROP TABLE Exercises; DROP TABLE Sets;')
+        
         DbIsReady = true;
     } catch (error) {
         console.error("Error inside createTables:", error);
         throw Error(`Failed to create tables`);
     };
-
 };
 
 export function isDbReady() {

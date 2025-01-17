@@ -37,7 +37,6 @@ export const addWorkout = async (db: SQLite.SQLiteDatabase, bodyPart: string) =>
 export const getWorkout = async (db: SQLite.SQLiteDatabase, workoutId: number): Promise<Workout[]> => {
   try {
       const workout: Workout[] = await db.getFirstAsync(`SELECT * FROM Workouts WHERE workoutId = ${workoutId}`);
-      // console.log("getWorkout, workout:", workouts);
       return workout;
   } catch (error) {
       console.error(error)
@@ -48,7 +47,6 @@ export const getWorkout = async (db: SQLite.SQLiteDatabase, workoutId: number): 
 export const getWorkouts = async (db: SQLite.SQLiteDatabase): Promise<Workout[]> => {
   try {
       const workouts: Workout[] = await db.getAllAsync("SELECT * FROM Workouts");
-      // console.log("getWorkouts, workouts:", workouts);
       return workouts;
   } catch (error) {
       console.error(error)
