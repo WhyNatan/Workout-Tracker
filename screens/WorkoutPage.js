@@ -172,7 +172,7 @@ export function WorkoutPage({ navigation, route }) {
         <View style={[{flex:1}]}>
             <AppBar navigation={navigation}/>
 
-            <ScrollView style={[{paddingLeft: 20, paddingTop: 10}]}>
+            <ScrollView style={styles.workoutBackground}>
                 <TextInput style={styles.exerciseBodyPart} value={workoutBodyPart} onChangeText={newWorkoutBodyPart => prepareUpdateWorkoutBodyPart(newWorkoutBodyPart)}/>
 
                 <ExercisesBlock exercises={workoutExercises}/>
@@ -222,7 +222,7 @@ function ExerciseBlock(props) {
     };
     
   return (
-    <View style={[{marginBottom:40}]}>
+    <View style={[{marginBottom:40}, styles.exerciseContainer]}>
         <View style={[styles.exerciseTitleContainer, styles.containerRow]}>
             <TextInput style={styles.exerciseTitle} value={exerciseName} onChangeText={newExerciseName => prepareUpdateExerciseName(newExerciseName)}/>
             <Text> </Text>
@@ -249,7 +249,7 @@ function ExerciseBlock(props) {
                 <Text style={styles.exerciseCaption}>Best Set</Text> 
             </GridCell>
             <GridCell width={2}> 
-                <Icon name='check' size ={22}/>
+                <Icon name='check' size={22}/>
             </GridCell>
         </View>
 

@@ -90,10 +90,10 @@ export function HomePage({ navigation }) {
 
     useEffect(() => {
         async function setup() {
-            console.log("Running Setup, workouts: ", workouts);
+            // console.log("Running Setup, workouts: ", workouts);
             var temp_workouts = await getBackEnd(db);
             await setWorkouts(temp_workouts);
-            console.log("After running Setup: ", JSON.stringify(temp_workouts));
+            // console.log("After running Setup: ", JSON.stringify(temp_workouts));
         };
         updatePage = setup;
         setup();
@@ -104,13 +104,13 @@ export function HomePage({ navigation }) {
         });
     }, []);
 
-    console.log("----- Rendering HomePage -----");
+    // console.log("----- Rendering HomePage -----");
 
     return (
         <View style={{flex:1}}>
             <AppBar/>
             
-            <ScrollView style={{flex:1}}>
+            <ScrollView style={styles.homeBackground}>
 
                 <Workouts navigation={navigation} workouts={workouts}/>
 
