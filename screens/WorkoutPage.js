@@ -79,15 +79,22 @@ async function requestUpdateWorkout(db, workoutId, workoutBodyPart) {
 };
 
 async function requestUpdateSetOfExercise(db, setId, exerciseId, workoutId, setReps, setWeight) {
+    const trimmedWeight = String(setWeight ?? '').trim();
+    const numericWeight = trimmedWeight === '' ? null : Number(trimmedWeight);
+    if (numericWeight !== null && !Number.isFinite(numericWeight)) {
+        Alert.alert('Invalid weight', 'Enter a numeric weight.');
+        return false;
+    };
+
     var tempSet= {
         setId: setId,
         exerciseId: exerciseId,
         workoutId: workoutId,
         setOrder: setId,
         reps: setReps,
-        weight: setWeight,
+        weight: numericWeight,
         bestSetReps: setReps,
-        bestSetWeight: setWeight,
+        bestSetWeight: numericWeight,
     };
 
     await updateSetOfExercise(db, tempSet);

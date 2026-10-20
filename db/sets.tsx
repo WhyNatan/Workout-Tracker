@@ -6,9 +6,13 @@ type Set = {
     workoutId: number;
     setOrder: number;
     reps: string;
-    weight: string;
+    weight: number | null;
     bestSetReps: string;
-    bestSetWeight: string;
+    bestSetWeight: number | null;
+};
+
+type SetInput = Omit<Set, "weight"> & {
+  weight: number | string | null;
 };
 
 type MaxSetId = {
@@ -57,9 +61,9 @@ export const addEmptySet = async (db: SQLite.SQLiteDatabase, exerciseId: number,
     workoutId: workoutId,
     setOrder: biggestSetId,
     reps: "",
-    weight: "",
+    weight: null,
     bestSetReps: "",
-    bestSetWeight: "",
+    bestSetWeight: null,
   };
 
   const insertQuery = await db.prepareAsync(`
@@ -75,16 +79,21 @@ export const addEmptySet = async (db: SQLite.SQLiteDatabase, exerciseId: number,
   };
 };
 
-export const updateSetOfExercise = async (db: SQLite.SQLiteDatabase, set: Set) => {
-  var tempSet= {
+export const updateSetOfExercise = async (db: SQLite.SQLiteDatabase, set: SetInput) => {
+  const weight = set.weight === null || set.weight === "" ? null : Number(set.weight);
+  if (weight !== null && !Number.isFinite(weight)) {
+    throw new Error("Weight must be a valid number.");
+  }
+
+  const tempSet: Set = {
     setId: set.setId,
     exerciseId: set.exerciseId,
     workoutId: set.workoutId,
     setOrder: set.setId,
     reps: set.reps,
-    weight: set.weight,
+    weight,
     bestSetReps: "0",
-    bestSetWeight: "0",
+    bestSetWeight: 0,
 };
   
   try {
@@ -92,16 +101,20 @@ export const updateSetOfExercise = async (db: SQLite.SQLiteDatabase, set: Set) =
 
     // Check which weights are higher, the new ones or the old ones.
     // If the weight is bigger, substitute the weight and reps variable.
-    if (tempSet.weight > tempOrigSet.bestSetWeight) {
+    // This also checks for null values to prevent overwriting the bestSet values with null values.
+    if (tempSet.weight === null) {
+      tempSet.bestSetWeight = tempOrigSet.bestSetWeight;
+      tempSet.bestSetReps = tempOrigSet.bestSetReps;
+    } else if (tempOrigSet.bestSetWeight === null || tempSet.weight > tempOrigSet.bestSetWeight) {
       tempSet.bestSetWeight = tempSet.weight;
       tempSet.bestSetReps = tempSet.reps;
     } else {
       tempSet.bestSetWeight = tempOrigSet.bestSetWeight;
 
       // If it is the same weight, check to see if reps increased.
-      if (tempSet.weight == tempOrigSet.bestSetWeight) {
+      if (tempSet.weight === tempOrigSet.bestSetWeight) {
         // If it did increase, update the value in the bestSet.
-        if (tempSet.reps > tempOrigSet.bestSetReps) {
+        if (Number(tempSet.reps) > Number(tempOrigSet.bestSetReps)) {
           tempSet.bestSetReps = tempSet.reps;
         } else {
           tempSet.bestSetReps = tempOrigSet.bestSetReps;

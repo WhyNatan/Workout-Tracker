@@ -35,9 +35,9 @@ export async function createTables(db: SQLite.SQLiteDatabase) {
         workoutId INTEGER,
         setOrder INTEGER,
         reps TEXT,
-        weight TEXT,
+        weight REAL,
         bestSetReps TEXT,
-        bestSetWeight TEXT
+        bestSetWeight REAL
         )
     `;
 
