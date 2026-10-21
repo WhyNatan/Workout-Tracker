@@ -8,6 +8,7 @@ import { styles } from '../styles/styles';
 import { Icon } from '@rneui/base';
 import { ScrollView } from 'react-native-gesture-handler';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Keeping it global to ease the use of it in the submit function.
 var WorkoutId;
@@ -350,10 +351,12 @@ const GridCell = ({width, children}) => {
 };
 
 const AppBar = ({ navigation }) => {
+    const insets = useSafeAreaInsets();
+
     return (
         <View style={styles.container}>
             {/* Space at the top to adjust for the bar */}
-            <View style={[{ paddingTop: 30 }]}></View>
+            <View style={{ paddingTop: insets.top }}></View>
 
             <View style={styles.containerRow}>
                 <TouchableNativeFeedback onPress={() => navigation.goBack()}>

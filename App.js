@@ -7,6 +7,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useCallback, useEffect, Suspense } from 'react';
 import { View, Icon, Text } from 'react-native';
 import { SQLiteProvider } from 'expo-sqlite';
+import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createStackNavigator();
 
@@ -42,13 +44,16 @@ export default function App() {
   }, [loadData]);
 
   return (
-    <NavigationContainer>
-      <Suspense fallback={<Fallback />}>
-        <SQLiteProvider databaseName='workout-tracker' onInit={runCreateTables} useSuspense>
-          <MyStack/>
-        </SQLiteProvider>
-      </Suspense>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <StatusBar style="dark" backgroundColor="transparent" translucent />
+      <NavigationContainer>
+        <Suspense fallback={<Fallback />}>
+          <SQLiteProvider databaseName='workout-tracker' onInit={runCreateTables} useSuspense>
+            <MyStack/>
+          </SQLiteProvider>
+        </Suspense>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 };
 

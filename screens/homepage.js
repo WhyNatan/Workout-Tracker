@@ -6,6 +6,7 @@ import { Text, ScrollView, View, Image, TextInput, Button, Alert, TouchableHighl
 import { useCallback, useEffect, useState } from 'react';
 import { styles } from '../styles/styles';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 // Will get overwritten with a function to refresh the workouts variable that is used to display the info on screen.
 var updatePage;
@@ -121,11 +122,12 @@ export function HomePage({ navigation }) {
 
 const AppBar = () => {
     const db = useSQLiteContext();
+    const insets = useSafeAreaInsets();
 
     return (
         <View style={styles.container}>
             {/* Space at the top to adjust for the bar */}
-            <View style={[{ paddingTop: 30 }]}></View>
+            <View style={{ paddingTop: insets.top }}></View>
 
             <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }]}>
                 <View style={[{ flex: 1 }]}>

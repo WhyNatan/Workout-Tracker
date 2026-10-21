@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "react-project",
+    "name": "Workout Tracker",
     "slug": "react-project",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -16,12 +16,18 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/Workout_Tracker_Icon.jpg",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.reidenger.reactproject"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c37c8c47-6fed-42f0-82b4-d992cc71aad3"
+      }
     }
   }
 }
